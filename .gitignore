@@ -1,0 +1,15 @@
+# Node dependencies
+node_modules/
+
+# Environment variables
+.env
+
+# Logs
+*.log
+
+# Coverage and test
+coverage/
+.nyc_output/
+
+# OS
+.DS_Store
