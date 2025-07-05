@@ -22,11 +22,16 @@ const UserSchema = new mongoose.Schema({
         minLength: [8, 'Password must be at least 8 characters.'],
         trim: true
     },
-    isAdmin: {
-        type: Boolean,
-        default: false
+    role: {
+        type: String,
+        enum: ['Admin', 'User'],
+        default: 'User'
+    },
+    lastLogin: {
+        type: Date,
+        default: null
     }
-})
+}, { timestamps: true })
 
 const UserModel = mongoose.model("User", UserSchema)
 

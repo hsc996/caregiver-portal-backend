@@ -6,7 +6,8 @@
   "scripts": {
     "test": "jest",
     "dev": "nodemon src/index.js",
-    "start": "node src/index.js"
+    "start": "node src/index.js",
+    "seed": "node src/db/seed/seedDb.js"
   },
   "repository": {
     "type": "git",
