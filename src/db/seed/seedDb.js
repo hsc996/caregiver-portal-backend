@@ -5,6 +5,7 @@ const { dbConnect } = require("../../db/dbFunctions");
 const { seedUsers } = require("./seedUsers");
 const { seedJournalEntries } = require("./seedJournalEntries");
 const { UserModel } = require('../../models/userModel');
+const { seedCodeSnippets } = require('./seedCodeSnippets');
 
 async function runSeeds(){
     try {
@@ -15,6 +16,7 @@ async function runSeeds(){
         const userIds = users.map(u => u._id);
 
         await seedJournalEntries(userIds);
+        await seedCodeSnippets(userIds);
 
         console.log("All fields seeded successfully.");
     } catch (error) {
