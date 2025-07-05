@@ -1,6 +1,6 @@
 const mongoose = require("mongoose");
 
-const { codeSnippetModel } = require('../../models/codeSnippetModel');
+const { CodeSnippetModel } = require('../../models/codeSnippetModel');
 
 async function seedCodeSnippets(userIds){
     const snippets = [
@@ -28,8 +28,8 @@ async function seedCodeSnippets(userIds){
     ]
 
     try {
-        await codeSnippetModel.deleteMany();
-        await codeSnippetModel.insertMany(snippets);
+        await CodeSnippetModel.deleteMany();
+        await CodeSnippetModel.insertMany(snippets);
         console.log("Code snippets seeded successfully.");
     } catch (error) {
         console.log("An error occurred while seeding code snippets: " + error);

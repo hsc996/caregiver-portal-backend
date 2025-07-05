@@ -1,6 +1,6 @@
 const mongoose = require("mongoose");
 
-const codeSnippetSchema = new mongoose.Schema({
+const CodeSnippetSchema = new mongoose.Schema({
     user: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'User',
@@ -37,8 +37,8 @@ const codeSnippetSchema = new mongoose.Schema({
     }
 }, { timestamp: true});
 
-const codeSnippetModel = mongoose.model('CodeSnippet', codeSnippetSchema);
+const CodeSnippetModel = mongoose.model('CodeSnippet', CodeSnippetSchema);
 
 module.exports = {
-    codeSnippetModel
+    CodeSnippetModel
 }
