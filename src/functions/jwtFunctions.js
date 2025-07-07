@@ -1,7 +1,7 @@
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcrypt");
 
-let jwtSecretKey = process.env.JWTSECRETKEY;
+let jwtSecretKey = process.env.JWT_SECRET_KEY;
 let saltRounds = 10;
 
 function generateJWT(userId, username, role = null){
@@ -31,7 +31,7 @@ function decodeJWT(tokenToDecode){
 }
 
 async function hashPassword(password){
-    return await bcrypt.hash(hashPassword, saltRounds);
+    return await bcrypt.hash(password, saltRounds);
 }
 
 async function comparePassword(providedPW, storedPW){

@@ -6,7 +6,7 @@ async function drop(){
     await dbDisconnect();
 }
 
-dbConnect.then(() => {
+dbConnect().then(() => {
     console.log("Connected to database.");
     drop();
-})
+});

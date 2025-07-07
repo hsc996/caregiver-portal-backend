@@ -17,13 +17,13 @@ router.post("/signup", async (req, res) => {
     const { username, email, password } = req.body;
 
     // Validate input
-    if (!user || !password || !email){
+    if (!username || !password || !email){
         throw new Error("Missing required fields.");
     }
 
     // Check if username or email already exists
-    const existingUser = UserModel.findOne({
-        $or: [{email: email}, {usernaem: username}]
+    const existingUser = await UserModel.findOne({
+        $or: [{email: email}, {username: username}]
     });
 
     if (existingUser){
@@ -41,23 +41,43 @@ router.post("/signup", async (req, res) => {
     let newUser = await UserModel.create({
         username: username,
         email: email,
-        password: password
+        password: hashedPw
     });
 
     console.log(`New user created successfully: ${newUser.username} (${newUser.email})`);
 
     // Generate JWT
-    const generateJWt = generateJWT(newUser._id, newUser.username);
+    const token = generateJWT(newUser._id, newUser.username);
 
-    // Remove sensitive information before returning user data
     const safeUser = newUser.toObject();
-    delete newUser.password;
-    return safeUser;
+    delete safeUser.password;
+
+    // Return user data
+    res.status(201).json({
+        message: "User created successfully",
+        user: safeUser,
+        token: token
+    });
+
     } catch (error) {
-        console.error(`An error occurred while creating user: ${error}`);
-        throw new Error("Unable to reguster new user")
+        console.error(`An error occurred while creating user: ${error.message}`);
+        throw new Error("Unable to register new user.")
     }    
 });
 
 
 // Sign in existing user
+
+router.post("/signin", async (req, res) => {
+    const { email, password } = req.body;
+
+    // Search for user by email
+
+    // Check if password is valid (compare passwords)
+
+    // Create new JWT
+
+
+})
+
+module.exports = router;
