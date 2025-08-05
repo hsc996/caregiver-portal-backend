@@ -4,6 +4,7 @@ const {
     hashPassword,
     comparePassword
 } = require('../functions/jwtFunctions');
+const { AppError } = require('../functions/helperFunctions');
 
 /** 
  * Controller to handle user account registration
@@ -18,7 +19,7 @@ async function signup(req, res) {
 
     // Validate input
     if (!username || !password || !email) {
-      throw new Error("Missing required fields.");
+      throw new AppError("Missing required fields.", 400);
     }
 
     // Check if username or email already exists
@@ -31,7 +32,7 @@ async function signup(req, res) {
         existingUser.email === email
           ? "This email is already taken."
           : "Username already taken.";
-      throw new Error(errorMessage);
+      throw new AppError(errorMessage, 409);
     }
 
     // Hash the password
@@ -62,7 +63,9 @@ async function signup(req, res) {
     });
   } catch (error) {
     console.error(`An error occurred while creating user: ${error.message}`);
-    throw new Error("Unable to register new user.");
+    return res
+    .status(error.statusCode || 500)
+    .json({ success: false, message: error.message});
   }
 }
 
@@ -81,7 +84,7 @@ async function signin(req, res) {
     // Search for user by email
     const user = await UserModel.findOne({ email: email });
     if (!user) {
-      throw new Error(
+      throw new AppError(
         "This email has not been registered yet. Please sign up first."
       );
     }
@@ -90,7 +93,7 @@ async function signin(req, res) {
     const isPasswordValid = await comparePassword(password, user.password);
     if (!isPasswordValid) {
       console.log("Incorrect password attempt");
-      throw new Error("Invalid password");
+      throw new AppError("Invalid password");
     }
 
     // Create new JWT
@@ -108,7 +111,9 @@ async function signin(req, res) {
     });
   } catch (error) {
     console.error(`An error occurred during sign-in: ${error.message}`);
-    throw new Error("Unable to sign in at this time.");
+    return res
+    .status(error.statusCode || 500)
+    .json({ success: false, message: error.message});
   }
 }
 

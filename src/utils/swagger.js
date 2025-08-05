@@ -1,5 +1,6 @@
 const swaggerJsdocs = require('swagger-jsdoc');
 const swaggerUi = require('swagger-ui-express');
+const path = require('path');
 
 const swaggerOptions = {
     failOnErrors: true,
@@ -11,7 +12,7 @@ const swaggerOptions = {
             description: 'Node/Express API with Swagger documentation',
         },
     },
-    apis: [__dirname + '/../routes/*.js'],
+    apis: [path.join(__dirname, '../routes/*.js')],
 };
 
 const swaggerSpecs = swaggerJsdocs(swaggerOptions);
