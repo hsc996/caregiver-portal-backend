@@ -30,6 +30,13 @@ const UserSchema = new mongoose.Schema({
     lastLogin: {
         type: Date,
         default: null
+    },
+    isActive: {
+        type: Boolean,
+        default: true
+    },
+    deletedAt: {
+        type: Date
     }
 }, { timestamps: true })
 
