@@ -1,6 +1,6 @@
 const express = require("express");
 const router = express.Router();
-const { getAllUsers } = require('../controllers/UserController');
+const { getAllUsers, updateUserData } = require('../controllers/UserController');
 const { paginationMiddleware } = require('../utils/middleware');
 
 /**
@@ -62,7 +62,10 @@ const { paginationMiddleware } = require('../utils/middleware');
  *         - isActive
  *         - createdAt
  *         - updatedAt
- *
+ */
+
+/**
+ * @swagger
  * /user/fetchallusers:
  *   get:
  *     summary: Retrieve a paginated list of all users
@@ -112,5 +115,76 @@ const { paginationMiddleware } = require('../utils/middleware');
  *         description: Server error
  */
 router.get('/fetchallusers', paginationMiddleware, getAllUsers);
+
+/**
+ * @swagger
+ * /user/{id}:
+ *   patch:
+ *     summary: Partially update user data by user ID
+ *     tags:
+ *       - Users
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         description: The user ID to update
+ *         schema:
+ *           type: string
+ *     requestBody:
+ *       description: Partial user data to update
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               username:
+ *                 type: string
+ *                 example: newusername
+ *               email:
+ *                 type: string
+ *                 format: email
+ *                 example: newemail@example.com
+ *               role:
+ *                 type: string
+ *                 enum: [Admin, User]
+ *                 example: User
+ *               isActive:
+ *                 type: boolean
+ *                 example: true
+ *             additionalProperties: false
+ *     responses:
+ *       200:
+ *         description: User data successfully updated
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 message:
+ *                   type: string
+ *                   example: User data successfully updated.
+ *                 data:
+ *                   $ref: '#/components/schemas/User'
+ *       404:
+ *         description: User not found
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: false
+ *                 message:
+ *                   type: string
+ *                   example: User not found.
+ *       500:
+ *         description: Server error
+ */
+router.patch('/:id', updateUserData);
 
 module.exports = router;

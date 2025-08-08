@@ -55,7 +55,9 @@ async function UpdateUserByQuery(query, updatedData){
             projection: { password: 0 }
         });
 
+        console.log(result);
         return result;
+        
     } catch (error) {
         console.error(`Error updating user with query: ${JSON.stringify(query)}`);
         throw new AppError("Failed to update user data.", 500);

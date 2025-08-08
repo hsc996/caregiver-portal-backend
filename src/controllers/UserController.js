@@ -5,6 +5,7 @@ const {
     UpdateUserByQuery,
     DeleteUserByQuery
 } = require('../services/userService');
+const { AppError } = require('../functions/helperFunctions');
 
 /** 
  * Controller to handle fetching all users
@@ -36,7 +37,7 @@ async function getAllUsers(req, res, next){
  * @param {Response} res - Express response object
  * @returns {Promise<void>}
  */
-async function updateUserData(res, req){
+async function updateUserData(req, res, next){
     try {
         const { id }  = req.params;
         const updatedData = req.body;
@@ -47,7 +48,7 @@ async function updateUserData(res, req){
         );
 
         if (!updatedUser){
-            throw new AppError("Useer not found.", 404);
+            throw new AppError("User not found.", 404);
         }
 
         res.status(200).json({
@@ -68,5 +69,6 @@ async function updateUserData(res, req){
 
 
 module.exports = {
-    getAllUsers
+    getAllUsers,
+    updateUserData
 }
