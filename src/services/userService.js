@@ -23,7 +23,7 @@ async function FindUserByQuery(query, projection = { password: 0}){
 
 // Find all users -- incl pagination
 
-async function FindAllUsers({ page, limit}){
+async function FindAllUsers(query = {}, { page = 1, limit = 10 } = {}){
     try {
         const skip = (page - 1) * limit;
         const users = await UserModel.find().skip(skip).limit(limit);
@@ -37,7 +37,7 @@ async function FindAllUsers({ page, limit}){
         }
     } catch (error) {
         console.error("Error fetching all users: ", error);
-        throw new AppError("Failed to fecth all users., 500");
+        throw new AppError("Failed to fecth all users.", 500);
     }
 }
 

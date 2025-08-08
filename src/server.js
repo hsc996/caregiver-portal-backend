@@ -1,6 +1,7 @@
 const express = require("express");
 const app = express();
 const cors = require('cors');
+const { errorHandlingMiddleware } = require("./utils/middleware");
 
 let corsOptions = {
     origin: [
@@ -41,6 +42,11 @@ app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpecs));
 
 const authRoutes = require('./routes/authRoutes');
 app.use('/auth', authRoutes);
+
+const userRoutes = require('./routes/userRoutes');
+app.use('/user', userRoutes);
+
+app.use(errorHandlingMiddleware);
 
 module.exports = {
     app
