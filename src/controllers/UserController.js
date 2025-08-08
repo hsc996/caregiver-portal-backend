@@ -12,7 +12,7 @@ const { AppError } = require('../functions/helperFunctions');
  * @param {Request} req
  * @param {Response} res 
 */
-async function getAllUsers(req, res, next){
+async function getAllUsersController(req, res, next){
     try {
         const { page, limit } = req.pagination;
 
@@ -37,7 +37,7 @@ async function getAllUsers(req, res, next){
  * @param {Response} res - Express response object
  * @returns {Promise<void>}
  */
-async function updateUserData(req, res, next){
+async function updateUserDataController(req, res, next){
     try {
         const { id }  = req.params;
         const updatedData = req.body;
@@ -69,6 +69,6 @@ async function updateUserData(req, res, next){
 
 
 module.exports = {
-    getAllUsers,
-    updateUserData
+    getAllUsersController,
+    updateUserDataController
 }

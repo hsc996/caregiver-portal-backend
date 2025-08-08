@@ -1,6 +1,6 @@
 const express = require("express");
 const router = express.Router();
-const { getAllUsers, updateUserData } = require('../controllers/UserController');
+const { getAllUsersController, updateUserDataController } = require('../controllers/UserController');
 const { paginationMiddleware } = require('../utils/middleware');
 
 /**
@@ -114,7 +114,7 @@ const { paginationMiddleware } = require('../utils/middleware');
  *       500:
  *         description: Server error
  */
-router.get('/fetchallusers', paginationMiddleware, getAllUsers);
+router.get('/fetchallusers', paginationMiddleware, getAllUsersController);
 
 /**
  * @swagger
@@ -185,6 +185,6 @@ router.get('/fetchallusers', paginationMiddleware, getAllUsers);
  *       500:
  *         description: Server error
  */
-router.patch('/:id', updateUserData);
+router.patch('/:id', updateUserDataController);
 
 module.exports = router;

@@ -70,7 +70,7 @@ async function UpdateUserByQuery(query, updatedData){
 
 async function DeleteUserByQuery(query){
     try {
-        const result = await UserModel.find(query);
+        const result = await UserModel.findOne(query);
 
         if (!result){
             throw new AppError("No user found to delete.", 404);
