@@ -63,12 +63,35 @@ async function updateUserDataController(req, res, next){
 
 
 // Delete profile
+async function softDeleteUser(req, res, next){
+    try {
+        const { id } = req.params;
+        const requester = req.user;
 
+        if (requester.role !== 'Admin' && requester.id !== id){
+            return res.status(403).json({
+                success: false,
+                message: "Unauthorized: You must be the owner of the profile or admin to complete this action."
+            });
+        }
+
+        const deleteUser = await DeleteUserByQuery({ _id: id });
+
+        res.status(200).json({
+            success: true,
+            message: "User deleted successfully.",
+            data: deleteUser
+        });
+    } catch (error) {
+        next(error);
+    }
+}
 
 
 
 
 module.exports = {
     getAllUsersController,
-    updateUserDataController
+    updateUserDataController,
+    softDeleteUser
 }

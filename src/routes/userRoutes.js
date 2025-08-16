@@ -1,7 +1,11 @@
 const express = require("express");
 const router = express.Router();
-const { getAllUsersController, updateUserDataController } = require('../controllers/UserController');
-const { paginationMiddleware } = require('../utils/middleware');
+const {
+    getAllUsersController,
+    updateUserDataController,
+    softDeleteUser
+} = require('../controllers/UserController');
+const { paginationMiddleware, authenticateUser } = require('../utils/middleware');
 
 /**
  * @swagger
@@ -185,6 +189,70 @@ router.get('/fetchallusers', paginationMiddleware, getAllUsersController);
  *       500:
  *         description: Server error
  */
-router.patch('/:id', updateUserDataController);
+router.patch('/:id', authenticateUser, updateUserDataController);
+
+/**
+ * @swagger
+ * /user/{id}/delete:
+ *   patch:
+ *     summary: Soft delete a user by ID (only owner or admin)
+ *     tags:
+ *       - Users
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         description: The user ID to soft delete
+ *         schema:
+ *           type: string
+ *     security:
+ *       - bearerAuth: []    # Assumes you use Bearer token auth
+ *     responses:
+ *       200:
+ *         description: User soft deleted successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 message:
+ *                   type: string
+ *                   example: User soft deleted successfully.
+ *                 data:
+ *                   $ref: '#/components/schemas/User'
+ *       403:
+ *         description: Unauthorized access
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: false
+ *                 message:
+ *                   type: string
+ *                   example: "Unauthorized: You can only delete your own profile or must be an admin."
+ *       404:
+ *         description: User not found or already deleted
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: false
+ *                 message:
+ *                   type: string
+ *                   example: User not found or already deleted.
+ *       500:
+ *         description: Server error
+ */
+
+router.patch('/:id/delete', authenticateUser, softDeleteUser);
 
 module.exports = router;
