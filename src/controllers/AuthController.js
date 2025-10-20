@@ -5,6 +5,7 @@ const { AppError } = require('../functions/helperFunctions');
  * Controller to handle user account registration
  * @param {Request} req
  * @param {Response} res 
+ * @param {Function} next
 */
 
 async function signup(req, res, next){
@@ -27,10 +28,11 @@ async function signup(req, res, next){
 /** 
  * Controller to handle user sign in
  * @param {Request} req
- * @param {Response} res 
+ * @param {Response} res
+ * @param {Function} next 
 */
 
-async function signin(req, res) {
+async function signin(req, res, next) {
   try {
     const { email, password } = req.body;
     const { user, token } = await loginUserService({ email, password });

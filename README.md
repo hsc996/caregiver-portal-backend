@@ -113,13 +113,35 @@ POST /api/patients/:patientId/requests (submit a change request)
 PUT /api/patients/:patientId/requests/:requestId/approve (approve request)
 PUT /api/patients/:patientId/requests/:requestId/reject (reject request)
 DELETE /api/patients/:patientId/requests/:requestId (withdraw request)
+```
 
 
-
-Key Design Decisions:
+### **Key Design Decisions:**
 
 Separation of Templates & Logs - Medications and ADLs have master records and daily completion logs
 JWT Authentication - Token-based auth with middleware
 Indexing - Added indexes on frequently queried fields (patient + date)
 Population - Relations populated for richer responses
 Role-Based Access - User roles for different permission levels
+
+
+
+### **OTHER CONSIDERATIONS**
+
+1. **User Management Endpoints** (if users need to update profiles):
+```
+   GET /api/users/:id
+   PUT /api/users/:id
+   PUT /api/users/:id/password
+```
+
+2. **Dashboard/Summary Endpoints**:
+```
+   GET /api/patients/:patientId/dashboard?date=xxx
+   // Returns summary: upcoming shifts, pending meds, incomplete ADLs, recent notes
+```
+
+3. **Notifications**:
+```
+   GET /api/notifications
+   PUT /api/notifications/:id/read

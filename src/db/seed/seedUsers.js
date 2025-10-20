@@ -1,6 +1,5 @@
 const { UserModel } = require('../../models/userModel');
 const mongoose = require("mongoose");
-const bcrypt = require("bcrypt");
 
 async function seedUsers(){
     const users = [
@@ -24,13 +23,9 @@ async function seedUsers(){
         },
     ]
 
-    for (let user of users){
-        user.password = await bcrypt.hash(user.password, 10);
-    }
-
     try {
         await UserModel.deleteMany();
-        await UserModel.insertMany(users);
+        await UserModel.create(users);
         console.log("Users seeded successfully.")
     } catch (error) {
         console.log("An error occured while seeding User data: " + error);

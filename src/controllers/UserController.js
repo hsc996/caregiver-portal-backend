@@ -1,11 +1,10 @@
-const { UserModel } = require('../models/userModel');
 const {
     FindUserByQuery,
     FindAllUsers,
     UpdateUserByQuery,
     DeleteUserByQuery
 } = require('../services/userService');
-const { AppError } = require('../functions/helperFunctions');
+const { sendSuccess, AppError } = require('../functions/helperFunctions');
 
 /** 
  * Controller to handle fetching all users
@@ -16,13 +15,22 @@ async function getAllUsersController(req, res, next){
     try {
         const { page, limit } = req.pagination;
 
-        const filter = {};
+        const filter = { isActive: true };
         const users = await FindAllUsers(
             filter,
             { page, limit }
         );
 
-        res.status(200).json(users)
+        res.status(200).json({
+            success: true,
+            data: users.users,
+            pagination: {
+                total: users.total,
+                page: users.page,
+                limit: users.limit,
+                totalPages: users. totalPages
+            }
+        })
     } catch (error) {
         console.error('Error fetching all users via controller method:', error);
         next(error);
@@ -47,15 +55,7 @@ async function updateUserDataController(req, res, next){
             updatedData
         );
 
-        if (!updatedUser){
-            throw new AppError("User not found.", 404);
-        }
-
-        res.status(200).json({
-            success: true,
-            message: "User data successfully updated.",
-            data: updatedUser
-        });
+        return sendSuccess(res, updatedUser, "User data successfully updated.");
     } catch (error) {
         next(error);
     }
@@ -66,28 +66,14 @@ async function updateUserDataController(req, res, next){
 async function softDeleteUser(req, res, next){
     try {
         const { id } = req.params;
-        const requester = req.user;
-
-        if (requester.role !== 'Admin' && requester.id !== id){
-            return res.status(403).json({
-                success: false,
-                message: "Unauthorized: You must be the owner of the profile or admin to complete this action."
-            });
-        }
 
         const deleteUser = await DeleteUserByQuery({ _id: id });
 
-        res.status(200).json({
-            success: true,
-            message: "User deleted successfully.",
-            data: deleteUser
-        });
+        return sendSuccess(res, deleteUser, "User deleted successfully.");
     } catch (error) {
         next(error);
     }
 }
-
-
 
 
 module.exports = {

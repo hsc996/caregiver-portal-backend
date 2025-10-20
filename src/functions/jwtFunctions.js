@@ -2,13 +2,17 @@ const jwt = require("jsonwebtoken");
 const bcrypt = require("bcrypt");
 
 let jwtSecretKey = process.env.JWT_SECRET_KEY;
-let saltRounds = 10;
+let saltRounds = 12;
 
-function generateJWT(userId, username, role = null){
+function generateJWT(userId, username, role){
+    if (!userId || !role){
+        throw new Error("User ID and role are required for JWT generation.")
+    }
     return jwt.sign(
         {
-            userId: userId,
-            username: username
+            id: userId,
+            username: username,
+            role: role
         },
         jwtSecretKey,
         {
@@ -17,30 +21,20 @@ function generateJWT(userId, username, role = null){
     );
 }
 
-function decodeJWT(tokenToDecode){
-    try {
-        return jwt.verify(tokenToDecode, jwtSecretKey);
-    } catch (error) {
-        console.error("JWT verification failed: " + error);
-
-        if (error.name === 'TokenExpiredError'){
-            throw new Error("Token has expired.");
-        }
-        throw new Error("Invalid or expired token.")
-    }
-}
-
 async function hashPassword(password){
     return await bcrypt.hash(password, saltRounds);
 }
 
 async function comparePassword(providedPW, storedPW){
+    if (!providedPW || !storedPW){
+        throw new Error("Both provided and stored passwords are required for comparison.");
+    }
+
     return await bcrypt.compare(providedPW, storedPW);
 }
 
 module.exports = {
     generateJWT,
-    decodeJWT,
     hashPassword,
     comparePassword
 }
