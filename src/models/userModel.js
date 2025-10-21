@@ -25,6 +25,9 @@ const UserSchema = new mongoose.Schema({
         minLength: [8, 'Password must be at least 8 characters.'],
         validate: {
             validator: function(password){
+                if (password.startsWith('$2b$')) {
+                    return true;
+                }
                 const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
                 return passwordRegex.test(password);
             },
@@ -48,7 +51,17 @@ const UserSchema = new mongoose.Schema({
     deletedAt: {
         type: Date,
         index: true
-    }
+    },
+    lastPasswordChange: {
+    type: Date,
+    default: null
+    },
+    passwordResetToken: {
+        type: String
+    },
+    passwordResetExpires: {
+        type: Date
+    },
 }, { timestamps: true })
 
 // Compound index for common queries

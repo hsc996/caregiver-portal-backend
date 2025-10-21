@@ -1,5 +1,11 @@
-const { registerUserService, loginUserService } = require('../services/authService');
+const {
+  registerUserService,
+  loginUserService,
+  requestPasswordResetService,
+  resetPasswordService
+ } = require('../services/authService');
 const { AppError } = require('../functions/helperFunctions');
+
 
 /** 
  * Controller to handle user account registration
@@ -7,7 +13,6 @@ const { AppError } = require('../functions/helperFunctions');
  * @param {Response} res 
  * @param {Function} next
 */
-
 async function signup(req, res, next){
   try {
     const { username, email, password } = req.body;
@@ -31,7 +36,6 @@ async function signup(req, res, next){
  * @param {Response} res
  * @param {Function} next 
 */
-
 async function signin(req, res, next) {
   try {
     const { email, password } = req.body;
@@ -39,7 +43,7 @@ async function signin(req, res, next) {
 
     res.status(200).json({
       success: true,
-      message: "User successfully signed in.",
+      message: "Login successful.",
       user,
       token
     });
@@ -49,7 +53,51 @@ async function signin(req, res, next) {
 }
 
 
+/** 
+ * Controller to request password reset email
+ * @param {Request} req
+ * @param {Response} res
+ * @param {Function} next 
+*/
+async function requestPasswordReset(req, res, next) {
+  try {
+    const { email } = req.body;
+    const result = await requestPasswordResetService({email});
+
+    res.status(200).json({
+      success: true,
+      message: result.message
+    });
+  } catch (error) {
+    next(error);
+  }
+}
+
+
+/** 
+ * Controller to reset password with token
+ * @param {Request} req
+ * @param {Response} res
+ * @param {Function} next 
+*/
+async function resetPassword(req, res, next) {
+  try {
+    const { token, newPassword } = req.body;
+    const result = await resetPasswordService({ token, newPassword });
+
+    res.status(200).json({
+      success: true,
+      message: result.message
+    })
+  } catch (error) {
+    next(error);
+  }
+}
+
+
 module.exports = {
     signin,
-    signup
+    signup,
+    resetPassword,
+    requestPasswordReset
 }

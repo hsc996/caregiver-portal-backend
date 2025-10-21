@@ -1,11 +1,3 @@
-function sendSuccess(response, data, message = "Success", statusCode){
-    return response.status(statusCode).json({
-        success: true,
-        message: message,
-        data: data
-    })
-}
-
 function sendError(response, statusCode, message){
     return response.status(statusCode).json({
         success: false,
@@ -24,6 +16,5 @@ class AppError extends Error {
 
 module.exports = {
     AppError,
-    sendError,
-    sendSuccess
+    sendError
 }

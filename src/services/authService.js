@@ -1,18 +1,17 @@
 const { UserModel } = require('../models/userModel');
+const crypto = require("crypto");
 const { 
     generateJWT,
-    comparePassword
+    comparePassword,
+    hashPassword
 } = require('../functions/jwtFunctions');
 const { AppError } = require('../functions/helperFunctions');
+const { sendPasswordResetEmail } = require('./emailService');
 
 
 async function registerUserService({ username, email, password}){
     if (!username || !email || !password){
         throw new AppError("Missing required fields.", 400);
-    }
-
-    if (password.length < 8){
-      throw new AppError("Password must be at least 8 characters long.", 400);
     }
 
      // Check if username or email already exists
@@ -42,6 +41,7 @@ async function registerUserService({ username, email, password}){
     return { user: newUser.toSafeObject(), token };
 }
 
+
 async function loginUserService({email, password}){
     if (!email || !password){
       throw new AppError("Both email and password are required.", 400);
@@ -49,7 +49,6 @@ async function loginUserService({email, password}){
 
     // Search for user by email
     const user = await UserModel.findOne({ email: email });
-
     if (!user){
       throw new AppError("Invalid email or password.", 401);
     }
@@ -74,7 +73,76 @@ async function loginUserService({email, password}){
     return { user: user.toSafeObject(), token};
 }
 
+
+
+async function requestPasswordResetService({email}){
+  if (!email){
+    throw new AppError("Email is required.", 400);
+  }
+
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  const validEmail = emailRegex.test(email);
+  if (!validEmail){
+    throw new AppError("Inavlid email format.", 401);
+  }
+
+  const user = await UserModel.findOne({email: email});
+  if (!user){
+    return { success: false, message: "User not found."}
+  }
+
+  const resetToken = crypto.randomBytes(32).toString('hex');
+  const hashedToken = crypto.createHash('sha256').update(resetToken).digest('hex');
+
+  // Save hashed token + expiry to user
+  user.passwordResetToken = hashedToken;
+  user.passwordResetExpires = Date.now() + 3600000; // 1 hour
+  await user.save();
+
+  const savedUser = await UserModel.findOne({email: email});
+
+  // Send reset email link
+  const resetUrl = `${process.env.FRONTEND_URL}/reset-password?token=${resetToken}`;
+  await sendPasswordResetEmail(user.email, resetUrl);
+
+  return { message: "An email reset link has been sent."};
+}
+
+
+
+async function resetPasswordService({token, newPassword}){
+  if (!token || !newPassword){
+    throw new AppError("Reset token and new password required.", 400);
+  }
+
+  // Hash the token in the URLto compared w stored hash
+  const hashedToken = crypto.createHash('sha256').update(token).digest('hex');
+
+  //Find user with valid token that hasn't expired
+  const user = await UserModel.findOne({
+    passwordResetToken: hashedToken,
+    passwordResetExpires: { $gt: Date.now() }
+  });
+
+  if (!user){
+    throw new AppError("Invalid or expired reset token.", 400);
+  }
+
+  // Hash new password and update user
+  user.password = newPassword;
+  user.passwordResetToken = undefined;
+  user.passwordResetExpires = undefined;
+  user.lastPasswordChange = new Date();
+
+  await user.save();
+
+  return { message: "Password successfully reset." };
+}
+
+
 module.exports = {
     loginUserService,
-    registerUserService
+    registerUserService,
+    requestPasswordResetService,
+    resetPasswordService
 }

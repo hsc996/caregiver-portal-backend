@@ -23,11 +23,16 @@ Notes:
 - Once the other users are granted access to the profile, they will automatically have permission to post handover notes without further approval. However, if they was to update the patient profile information or the medication list, the original user (admin) will have to approve the changes before they are presented to all users on this patient's profile.
 - 
 ```
-POST /api/auth/register ✓
-POST /api/auth/login ✓
-POST /api/auth/logout (ADD - for token invalidation)
-POST /api/auth/refresh (ADD - for token refresh)
-GET /api/auth/me (ADD - get current user profile)
+POST /api/auth/register ✓ [TESTED]
+POST /api/auth/login ✓ [TESTED]
+POST /api/auth/refresh (ADD - for token refresh) [NOT WRITTEN]
+POST /api/auth/forgot-password [TESTED]
+POST /api/auth/reset-password [TESTED]
+
+- password reset function/controller
+   1. initiate reset: find user by email, generate random reset token, save hashed token to user, send reset password email
+   2. reset password(token, new_pw) -> hash token for comparison, find user w corresponding token, update pw + clear reset token
+- 
 ```
 
 ### **Patients**

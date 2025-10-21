@@ -4,7 +4,7 @@ const {
     UpdateUserByQuery,
     DeleteUserByQuery
 } = require('../services/userService');
-const { sendSuccess, AppError } = require('../functions/helperFunctions');
+const { AppError } = require('../functions/helperFunctions');
 
 /** 
  * Controller to handle fetching all users
@@ -28,7 +28,7 @@ async function getAllUsersController(req, res, next){
                 total: users.total,
                 page: users.page,
                 limit: users.limit,
-                totalPages: users. totalPages
+                totalPages: users.totalPages
             }
         })
     } catch (error) {
@@ -43,6 +43,7 @@ async function getAllUsersController(req, res, next){
  * @route PUT /users/{id}
  * @param {Request} req - Express request object
  * @param {Response} res - Express response object
+ * @param {Function} next - Express next function
  * @returns {Promise<void>}
  */
 async function updateUserDataController(req, res, next){
@@ -55,7 +56,11 @@ async function updateUserDataController(req, res, next){
             updatedData
         );
 
-        return sendSuccess(res, updatedUser, "User data successfully updated.");
+        res.status(200).json({
+            success: true,
+            data: updatedUser,
+            message: "User data updated successfully."
+        })
     } catch (error) {
         next(error);
     }
@@ -69,7 +74,11 @@ async function softDeleteUser(req, res, next){
 
         const deleteUser = await DeleteUserByQuery({ _id: id });
 
-        return sendSuccess(res, deleteUser, "User deleted successfully.");
+        res.status(200).json({
+            success: true,
+            data: deleteUser,
+            message: "User deleted successfully."
+        })
     } catch (error) {
         next(error);
     }

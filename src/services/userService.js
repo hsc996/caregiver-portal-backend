@@ -75,7 +75,7 @@ async function DeleteUserByQuery(query){
     }
 
     if (!result.isActive){
-        throw new AppError("This user has already been deactivated.")
+        throw new AppError("This user has already been deactivated.", 400)
     }
 
     // Soft delete user

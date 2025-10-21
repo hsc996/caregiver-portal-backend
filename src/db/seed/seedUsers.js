@@ -6,19 +6,19 @@ async function seedUsers(){
         {
             username: "first_user",
             email: "user1email@gmail.com",
-            password: "PassW123!",
+            password: "PassWORDsec123!",
             role: "Admin"
         },
         {
             username: "second_user",
             email: "user2@gmail.com",
-            password: "Cowboy22!",
+            password: "CowboyPAssword22!",
             role: "User"
         },
         {
             username: "third_user",
             email: "user3@gmail.com",
-            password: "Poltergeist344!",
+            password: "PoltergeistPW344!",
             role: "User"
         },
     ]

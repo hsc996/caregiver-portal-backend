@@ -118,7 +118,7 @@ function authorizeOwnerorAdmin(req, res, next) {
   }
 
   const resourceId = req.params.id || req.params.userId;
-  const isOwner = req.user.id.toString() === resourceId;
+  const isOwner = req.user.id.toString() === resourceId.toString();
   const isAdmin = req.user.role === "Admin";
 
   if (!isOwner && !isAdmin) {
