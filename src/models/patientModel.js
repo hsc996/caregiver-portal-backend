@@ -1,5 +1,5 @@
 const mongoose = require("mongoose");
-const { emergencyContactSchema } = require('./emergencyContactModel');
+const { emergencyContactSchema } = require('./emergencyContactSchema');
 
 const patientSchema = new mongoose.Schema({
     firstName: {
