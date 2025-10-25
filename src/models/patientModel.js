@@ -53,6 +53,24 @@ const patientSchema = new mongoose.Schema({
             default: Date.now
         }
     }],
+    medicationSchedule: [{
+        name: String,
+        dosage: String,
+        frequency: String,
+        scheduledTimes: [String],  // ["08:00", "20:00"]
+        route: String,
+        prescribedBy: String,
+        startDate: Date,
+        endDate: Date,
+        isActive: Boolean
+    }],
+    
+    careTaskSchedule: [{
+        task: String,
+        frequency: String,
+        category: String,
+        instructions: String
+    }],
     isActive: {
         type: Boolean,
         default: true
