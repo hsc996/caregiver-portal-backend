@@ -1,3 +1,5 @@
+const mongoose = require("mongoose");
+
 const adlRecordSchema = new mongoose.Schema({
     patientId: {
         type: mongoose.Schema.Types.ObjectId,
@@ -96,10 +98,6 @@ const adlRecordSchema = new mongoose.Schema({
             value: Number,
             time: Date
         }
-    },
-    generalNotes: {
-        type: String,
-        trim: true
     },
     recordedBy: {
         type: mongoose.Schema.Types.ObjectId,

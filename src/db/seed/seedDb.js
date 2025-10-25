@@ -8,6 +8,7 @@ const { seedUsers } = require("./seedUsers");
 const { seedHandoverNotes } = require("./seedHandoverNotes");
 const { seedPatients } = require("./seedPatients");
 const { seedMedications } = require("./seedMedications");
+const { seedADLs } = require("./seedADLs");
 
 async function runSeeds() {
   try {
@@ -21,15 +22,16 @@ async function runSeeds() {
     //seed Patients
     await seedPatients(userIds);
     const patients = await PatientModel.find({});
-    const patientIds = patients.map((u) => u._id);
+    const patientIds = patients.map((p) => p._id);
 
     await seedHandoverNotes(userIds, patientIds);
     await seedMedications(userIds, patientIds);
+    await seedADLs(userIds, patientIds);
 
+    console.log("All fields seeded successfully.");
   } catch (error) {
     console.log("An error occurred during seeding: " + error);
   } finally {
-    console.log("All fields seeded successfully.");
     process.exit();
   }
 }
