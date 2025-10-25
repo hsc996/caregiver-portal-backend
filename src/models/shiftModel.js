@@ -1,3 +1,5 @@
+const mongoose = require("mongoose");
+
 const shiftSchema = new mongoose.Schema({
     patientId: {
         type: mongoose.Schema.Types.ObjectId,
@@ -36,10 +38,6 @@ const shiftSchema = new mongoose.Schema({
         type: String,
         enum: ['scheduled', 'in-progress', 'completed', 'cancelled', 'no-show'],
         default: 'scheduled'
-    },
-    notes: {
-        type: String,
-        trim: true
     }
 }, { timestamps: true });
 

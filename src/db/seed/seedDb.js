@@ -9,6 +9,7 @@ const { seedHandoverNotes } = require("./seedHandoverNotes");
 const { seedPatients } = require("./seedPatients");
 const { seedMedications } = require("./seedMedications");
 const { seedADLs } = require("./seedADLs");
+const { seedShifts } = require("./seedShift");
 
 async function runSeeds() {
   try {
@@ -27,6 +28,7 @@ async function runSeeds() {
     await seedHandoverNotes(userIds, patientIds);
     await seedMedications(userIds, patientIds);
     await seedADLs(userIds, patientIds);
+    await seedShifts(userIds, patientIds);
 
     console.log("All fields seeded successfully.");
   } catch (error) {
