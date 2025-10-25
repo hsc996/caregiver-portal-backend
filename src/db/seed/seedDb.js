@@ -2,11 +2,11 @@ require('dotenv').config();
 
 const { dbConnect } = require("../../db/dbFunctions");
 const { UserModel } = require('../../models/userModel');
+const { PatientModel } = require("../../models/patientModel");
 
 const { seedUsers } = require("./seedUsers");
-const { seedJournalEntries } = require("./seedJournalEntries");
-const { seedCodeSnippets } = require('./seedCodeSnippets');
-const { seedBookmarks } = require('./seedBookmarks');
+const { seedHandoverNotes } = require("./seedHandoverNotes");
+const { seedPatients } = require("./seedPatients");
 
 async function runSeeds(){
     try {
@@ -16,9 +16,12 @@ async function runSeeds(){
         const users = await UserModel.find({});
         const userIds = users.map(u => u._id);
 
-        await seedJournalEntries(userIds);
-        await seedCodeSnippets(userIds);
-        await seedBookmarks(userIds)
+        const patients = await PatientModel.find({});
+        const patientIds = patients.map(u => u._id);
+
+
+        await seedHandoverNotes(users, patientIds);
+        await seedPatients(userIds);
 
     } catch (error) {
         console.log("An error occurred during seeding: " + error);

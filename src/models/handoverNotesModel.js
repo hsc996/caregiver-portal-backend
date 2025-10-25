@@ -1,9 +1,14 @@
 const mongoose = require("mongoose");
 
-const JournalSchema = new mongoose.Schema({
+const HandoverSchema = new mongoose.Schema({
     user: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'User',
+        required: true
+    },
+    patient: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Patient',
         required: true
     },
     title: {
@@ -29,8 +34,8 @@ const JournalSchema = new mongoose.Schema({
     }
 }, { timestamps: true });
 
-const JournalModel = mongoose.model('Journal', JournalSchema);
+const HandoverModel = mongoose.model('HandoverNotes', HandoverSchema);
 
 module.exports = {
-    JournalModel
+    HandoverModel
 }

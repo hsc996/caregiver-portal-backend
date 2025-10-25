@@ -25,7 +25,7 @@ Notes:
 ```
 POST /api/auth/register ✓ [TESTED]
 POST /api/auth/login ✓ [TESTED]
-POST /api/auth/refresh (ADD - for token refresh) [NOT WRITTEN]
+**POST /api/auth/refresh (ADD - for token refresh) [NOT WRITTEN]**
 POST /api/auth/forgot-password [TESTED]
 POST /api/auth/reset-password [TESTED]
 
@@ -102,6 +102,7 @@ DELETE /api/patients/:patientId/adls/logs/:id ✓
 
 Notes:
 - All users should be able to post handover notes, and they should be allowed to edit  r delete notes that they themselves have posted.
+  [MODEL + SEEDING DONE]
 
 ```
 GET /api/patients/:patientId/notes?date=xxx&startDate=xxx&endDate=xxx ✓

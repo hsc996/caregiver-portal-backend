@@ -39,6 +39,10 @@ const UserSchema = new mongoose.Schema({
         enum: ['Admin', 'User'],
         default: 'User'
     },
+    // patientIds: [{
+    //     type: mongoose.Schema.Types.ObjectId,
+    //     ref: 'Patient'
+    // }],
     lastLogin: {
         type: Date,
         default: null
