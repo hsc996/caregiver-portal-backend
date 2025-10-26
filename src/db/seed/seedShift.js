@@ -472,5 +472,5 @@ async function seedShifts(caregiverIds, patientIds) {
 }
 
 module.exports = {
-  seedShifts,
+  seedShifts
 };
