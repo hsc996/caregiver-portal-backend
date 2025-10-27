@@ -3,7 +3,8 @@ const crypto = require("crypto");
 const { 
     generateJWT,
     comparePassword,
-    hashPassword
+    generateRefreshToken,
+    verifyRefreshToken
 } = require('../functions/jwtFunctions');
 const { AppError } = require('../functions/helperFunctions');
 const { sendPasswordResetEmail } = require('./emailService');
@@ -35,10 +36,11 @@ async function registerUserService({ username, email, password}){
       role: 'User'
     });
 
-    // Generate JWT
+    // Generate JWT + refresh token
     const token = generateJWT(newUser._id, newUser.username, newUser.role);
+    const refreshToken = generateRefreshToken(newUser._id);
 
-    return { user: newUser.toSafeObject(), token };
+    return { user: newUser.toSafeObject(), token, refreshToken };
 }
 
 
@@ -67,10 +69,11 @@ async function loginUserService({email, password}){
     user.lastLogin = new Date();
     await user.save();
 
-    // Create new JWT
+    // Create new JWT + refresh token
     const token = generateJWT(user._id, user.username, user.role);
+    const refreshToken = generateRefreshToken(user._id);
 
-    return { user: user.toSafeObject(), token};
+    return { user: user.toSafeObject(), token, refreshToken };
 }
 
 
@@ -140,9 +143,45 @@ async function resetPasswordService({token, newPassword}){
 }
 
 
+async function refreshTokenService({ refreshToken }){
+  if (!refreshToken){
+    throw new AppError("Refresh token required.", 401);
+  }
+
+  try {
+    const decoded = verifyRefreshToken(refreshToken);
+    if (decoded.type !== "refresh"){
+      throw new AppError("Invalid token type", 401);
+    }
+
+    const user = await UserModel.findById(decoded.id);
+    if (!user){
+      throw new AppError("User not found.", 404);
+    }
+    if (!user.isActive){
+      throw new AppError("This account has been deactivated.", 403);
+    }
+
+    const newAccessToken = generateJWT(user._id, user.username, user.role);
+    const newRefreshToken = generateRefreshToken(user._id);
+
+    return {
+      token: newAccessToken,
+      refreshToken: newRefreshToken
+    }
+  } catch (error) {
+    if (error instanceof AppError){
+      throw error;
+    }
+    throw new AppError(error.message || "Token refresh failed.", 401);
+  }
+}
+
+
 module.exports = {
     loginUserService,
     registerUserService,
     requestPasswordResetService,
-    resetPasswordService
+    resetPasswordService,
+    refreshTokenService
 }

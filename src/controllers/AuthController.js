@@ -2,7 +2,8 @@ const {
   registerUserService,
   loginUserService,
   requestPasswordResetService,
-  resetPasswordService
+  resetPasswordService,
+  refreshTokenService
  } = require('../services/authService');
 const { AppError } = require('../functions/helperFunctions');
 
@@ -16,13 +17,14 @@ const { AppError } = require('../functions/helperFunctions');
 async function signup(req, res, next){
   try {
     const { username, email, password } = req.body;
-    const { user, token } = await registerUserService({ username, email, password});
+    const { user, token, refreshToken } = await registerUserService({ username, email, password});
 
     res.status(201).json({
       success: true,
       message: "User created successfully.",
       user,
-      token
+      token,
+      refreshToken
     });
   } catch (error) {
     next(error);
@@ -39,13 +41,14 @@ async function signup(req, res, next){
 async function signin(req, res, next) {
   try {
     const { email, password } = req.body;
-    const { user, token } = await loginUserService({ email, password });
+    const { user, token, refreshToken } = await loginUserService({ email, password });
 
     res.status(200).json({
       success: true,
       message: "Login successful.",
       user,
-      token
+      token,
+      refreshToken
     });
   } catch (error) {
     next(error);
@@ -94,10 +97,33 @@ async function resetPassword(req, res, next) {
   }
 }
 
+/** 
+ * Controller to refresh access token
+ * @param {Request} req
+ * @param {Response} res
+ * @param {Function} next 
+*/
+async function refreshToken(req, res, next){
+  try {
+    const { refreshToken } = req.body;
+    const result = await refreshTokenService({refreshToken});
+
+    res.status(200).json({
+      success: true,
+      message: "Token refreshed successfully.",
+      token: result.token,
+      refreshToken: result.refreshToken
+    });
+  } catch (error) {
+    next(error);
+  }
+}
+
 
 module.exports = {
     signin,
     signup,
     resetPassword,
-    requestPasswordReset
+    requestPasswordReset,
+    refreshToken
 }

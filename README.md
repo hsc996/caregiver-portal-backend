@@ -471,7 +471,7 @@ Refresh access token using refresh token
 }
 ```
 
-**Status**: PENDING
+**Status**: ✅ TESTED
 
 ---
 
@@ -498,7 +498,7 @@ Request password reset email
 - Sends reset token via email
 - Token expires in 1 hour
 
-**Status**: ✅ TESTED
+**Status**: ✅ TESTED IN DEV MODE - NEEDS TO SEND EMAIL + RETEST
 
 ---
 

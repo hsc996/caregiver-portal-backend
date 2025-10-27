@@ -1,6 +1,11 @@
 const express = require('express');
 const router = express.Router();
-const { signup, signin, requestPasswordReset, resetPassword } = require('../controllers/AuthController');
+const { signup,
+    signin,
+    requestPasswordReset,
+    resetPassword,
+    refreshToken
+} = require('../controllers/AuthController');
 
 /**
  * @swagger
@@ -200,5 +205,69 @@ router.post('/forgot-password', requestPasswordReset);
  *         description: Server error
  */
 router.post('/reset-password', resetPassword);
+
+
+/**
+ * @swagger
+ * /auth/refresh:
+ *   post:
+ *     summary: Refresh access token
+ *     tags: [Auth]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - refreshToken
+ *             properties:
+ *               refreshToken:
+ *                 type: string
+ *                 example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY3M...
+ *                 description: Refresh token received during login or registration
+ *     responses:
+ *       200:
+ *         description: Token refreshed successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 message:
+ *                   type: string
+ *                   example: Token refreshed successfully.
+ *                 token:
+ *                   type: string
+ *                   example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY3M...
+ *                   description: New access token
+ *                 refreshToken:
+ *                   type: string
+ *                   example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY3M...
+ *                   description: New refresh token
+ *       401:
+ *         description: Invalid or expired refresh token
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: false
+ *                 message:
+ *                   type: string
+ *                   example: Invalid or expired refresh token.
+ *       403:
+ *         description: Account is deactivated
+ *       404:
+ *         description: User not found
+ *       500:
+ *         description: Server error
+ */
+router.post('/refresh', refreshToken);
 
 module.exports = router;

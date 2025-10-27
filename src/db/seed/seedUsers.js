@@ -5,7 +5,7 @@ async function seedUsers(){
     const users = [
         {
             username: "first_user",
-            email: "user1email@gmail.com",
+            email: "han.scaife@gmail.com",
             password: "PassWORDsec123!",
             role: "Admin"
         },

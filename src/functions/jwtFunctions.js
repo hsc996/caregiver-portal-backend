@@ -16,9 +16,29 @@ function generateJWT(userId, username, role){
         },
         jwtSecretKey,
         {
-            expiresIn: "7d"
+            expiresIn: "15m"
         }
     );
+}
+
+function generateRefreshToken(userId){
+    if (!userId){
+        throw new Error("User ID is required for refresh token generation.")
+    }
+
+    return jwt.sign(
+        { id: userId, type: "refresh" },
+        process.env.REFRESH_SECRET_TOKEN || jwtSecretKey,
+        { expiresIn: "7d" }
+    );
+}
+
+function verifyRefreshToken(token){
+    try {
+        return jwt.verify(token, process.env.REFRESH_SECRET_TOKEN || jwtSecretKey);
+    } catch (error) {
+        throw new Error("Invalid or expired refresh token.");
+    }
 }
 
 async function hashPassword(password){
@@ -36,5 +56,7 @@ async function comparePassword(providedPW, storedPW){
 module.exports = {
     generateJWT,
     hashPassword,
-    comparePassword
+    comparePassword,
+    generateRefreshToken,
+    verifyRefreshToken
 }
