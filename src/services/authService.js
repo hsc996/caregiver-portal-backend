@@ -87,23 +87,26 @@ async function requestPasswordResetService({email}){
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
   const validEmail = emailRegex.test(email);
   if (!validEmail){
-    throw new AppError("Inavlid email format.", 401);
-  }
-
-  const user = await UserModel.findOne({email: email});
-  if (!user){
-    return { success: false, message: "User not found."}
+    throw new AppError("Invalid email format.", 401);
   }
 
   const resetToken = crypto.randomBytes(32).toString('hex');
   const hashedToken = crypto.createHash('sha256').update(resetToken).digest('hex');
 
-  // Save hashed token + expiry to user
-  user.passwordResetToken = hashedToken;
-  user.passwordResetExpires = Date.now() + 3600000; // 1 hour
-  await user.save();
-
-  const savedUser = await UserModel.findOne({email: email});
+  // Find user, if found save hashed token + expiry to user
+  const user = await UserModel.findOneAndUpdate(
+    {email: email},
+    {
+      $set: {
+        passwordResetToken: hashedToken,
+        passwordResetExpires: Date.now() + 3600000
+      }
+    },
+    { new: false }
+  );
+  if (!user){
+    return { success: false, message: "If that email exists, a reset link has been sent."}
+  }
 
   // Send reset email link
   const resetUrl = `${process.env.FRONTEND_URL}/reset-password?token=${resetToken}`;
@@ -122,7 +125,7 @@ async function resetPasswordService({token, newPassword}){
   // Hash the token in the URLto compared w stored hash
   const hashedToken = crypto.createHash('sha256').update(token).digest('hex');
 
-  //Find user with valid token that hasn't expired
+  // Find user with valid token that hasn't expired
   const user = await UserModel.findOne({
     passwordResetToken: hashedToken,
     passwordResetExpires: { $gt: Date.now() }
@@ -137,7 +140,6 @@ async function resetPasswordService({token, newPassword}){
   user.passwordResetToken = undefined;
   user.passwordResetExpires = undefined;
   user.lastPasswordChange = new Date();
-
   await user.save();
 
   return { message: "Password successfully reset." };
