@@ -50,11 +50,16 @@ async function loginUserService({email, password}){
     }
 
     // Search for user by email
-    const user = await UserModel.findOne({ email: email });
+    const user = await UserModel.findOneAndUpdate(
+      { email: email },
+      { $set: {lastLogin: new Date()} },
+      { new : false }
+    );
     if (!user){
       throw new AppError("Invalid email or password.", 401);
     }
 
+    // Check if user account is active
     if (!user.isActive){
       throw new AppError("This account has been deactivated.", 403);
     }
@@ -64,10 +69,6 @@ async function loginUserService({email, password}){
     if (!isPasswordValid) {
       throw new AppError("Invalid email or password.", 401);
     }
-
-    // Save date as last log in
-    user.lastLogin = new Date();
-    await user.save();
 
     // Create new JWT + refresh token
     const token = generateJWT(user._id, user.username, user.role);
@@ -176,7 +177,6 @@ async function refreshTokenService({ refreshToken }){
     throw new AppError(error.message || "Token refresh failed.", 401);
   }
 }
-
 
 module.exports = {
     loginUserService,
