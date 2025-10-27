@@ -89,6 +89,9 @@ UserSchema.pre('save', async function(next){
 UserSchema.methods.toSafeObject = function(){
     const obj = this.toObject();
     delete obj.password;
+    delete obj.passwordResetToken;
+    delete obj.passwordResetExpires;
+    delete obj.__v;
     return obj;
 };
 

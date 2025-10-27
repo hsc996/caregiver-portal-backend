@@ -49,10 +49,10 @@ async function loginUserService({email, password}){
       throw new AppError("Both email and password are required.", 400);
     }
 
-    // Search for user by email
+    // Search for user by email, update last login date + return original doc
     const user = await UserModel.findOneAndUpdate(
       { email: email },
-      { $set: {lastLogin: new Date()} },
+      { $set: { lastLogin: new Date() } },
       { new : false }
     );
     if (!user){
