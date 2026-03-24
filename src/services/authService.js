@@ -49,12 +49,8 @@ async function loginUserService({email, password}){
       throw new AppError("Both email and password are required.", 400);
     }
 
-    // Search for user by email, update last login date + return original doc
-    const user = await UserModel.findOneAndUpdate(
-      { email: email },
-      { $set: { lastLogin: new Date() } },
-      { new : false }
-    );
+    // Search for user by email
+    const user = await UserModel.findOne({ email: email });
     if (!user){
       throw new AppError("Invalid email or password.", 401);
     }
@@ -69,6 +65,11 @@ async function loginUserService({email, password}){
     if (!isPasswordValid) {
       throw new AppError("Invalid email or password.", 401);
     }
+
+    await UserModel.updateOne(
+      { _id: user._id },
+      { $set: { lastLogin: new Date() } }
+    );
 
     // Create new JWT + refresh token
     const token = generateJWT(user._id, user.username, user.role);

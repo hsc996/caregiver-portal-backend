@@ -5,7 +5,10 @@ const {
     updateUserDataController,
     softDeleteUser
 } = require('../controllers/UserController');
-const { paginationMiddleware, authenticateUser } = require('../utils/middleware');
+const { paginationMiddleware,
+        authenticateUser,
+        authorizeOwnerorAdmin
+} = require('../utils/middleware');
 
 /**
  * @swagger
@@ -189,7 +192,7 @@ router.get('/fetchallusers', paginationMiddleware, getAllUsersController);
  *       500:
  *         description: Server error
  */
-router.patch('/:id', authenticateUser, updateUserDataController);
+router.patch('/:id', authenticateUser, authorizeOwnerorAdmin, updateUserDataController);
 
 /**
  * @swagger
@@ -253,6 +256,6 @@ router.patch('/:id', authenticateUser, updateUserDataController);
  *         description: Server error
  */
 
-router.patch('/:id/delete', authenticateUser, softDeleteUser);
+router.patch('/delete/:id', authenticateUser, authorizeOwnerorAdmin, softDeleteUser);
 
 module.exports = router;

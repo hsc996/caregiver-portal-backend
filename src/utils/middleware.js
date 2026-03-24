@@ -1,6 +1,7 @@
 const { AppError } = require("../functions/helperFunctions");
 const jwt = require("jsonwebtoken");
 
+
 function errorHandlingMiddleware(err, req, res, next) {
   console.error("ERROR STACK:", err.stack || err);
 
@@ -93,6 +94,7 @@ function authenticateUser(req, res, next) {
   }
 }
 
+// Allowing the original admin to grant admin privileges to another caregiver?
 function authorizeRoles(...allowedRoles) {
   return (req, res, next) => {
     if (!req.user) {
@@ -133,10 +135,15 @@ function authorizeOwnerorAdmin(req, res, next) {
   next();
 }
 
+
+
 module.exports = {
   errorHandlingMiddleware,
   paginationMiddleware,
   authenticateUser,
   authorizeRoles,
-  authorizeOwnerorAdmin
+  authorizeOwnerorAdmin,
 };
+
+
+

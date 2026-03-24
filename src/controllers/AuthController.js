@@ -5,7 +5,6 @@ const {
   resetPasswordService,
   refreshTokenService
  } = require('../services/authService');
-const { AppError } = require('../functions/helperFunctions');
 
 
 /** 

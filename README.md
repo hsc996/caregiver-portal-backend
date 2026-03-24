@@ -273,6 +273,7 @@ models/
 **Purpose**: Caregiver scheduling and attendance tracking
 
 **Schema**:
+
 ```javascript
 {
   patientId: ObjectId (ref: 'Patient', required),
@@ -291,6 +292,7 @@ models/
 ```
 
 **Indexes**:
+
 - `patientId: 1, date: -1`
 - `caregiverId: 1, date: -1`
 - `patientId: 1, caregiverId: 1, date: 1` (compound for unique constraint)

@@ -4,7 +4,7 @@ const {
     UpdateUserByQuery,
     DeleteUserByQuery
 } = require('../services/userService');
-const { AppError } = require('../functions/helperFunctions');
+
 
 /** 
  * Controller to handle fetching all users

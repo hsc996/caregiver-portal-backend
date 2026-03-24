@@ -6,6 +6,15 @@ const { signup,
     resetPassword,
     refreshToken
 } = require('../controllers/AuthController');
+const rateLimit = require("express-rate-limit");
+
+const authLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 5,
+  message: 'Too many attempts, please try again later.',
+  standardHeaders: true,
+  legacyHeaders: false,
+});
 
 /**
  * @swagger
@@ -56,7 +65,7 @@ const { signup,
  *       500:
  *         description: Unable to register new user
  */
-router.post('/signup', signup);
+router.post('/signup', authLimiter, signup);
 
 /**
  * @swagger
@@ -108,7 +117,7 @@ router.post('/signup', signup);
  *       500:
  *         description: Server error
  */
-router.post('/signin', signin);
+router.post('/signin', authLimiter, signin);
 
 /**
  * @swagger
@@ -148,7 +157,7 @@ router.post('/signin', signin);
  *       500:
  *         description: Server error
  */
-router.post('/forgot-password', requestPasswordReset);
+router.post('/forgot-password', authLimiter, requestPasswordReset);
 
 /**
  * @swagger
@@ -204,7 +213,7 @@ router.post('/forgot-password', requestPasswordReset);
  *       500:
  *         description: Server error
  */
-router.post('/reset-password', resetPassword);
+router.post('/reset-password', authLimiter, resetPassword);
 
 
 /**
@@ -268,6 +277,6 @@ router.post('/reset-password', resetPassword);
  *       500:
  *         description: Server error
  */
-router.post('/refresh', refreshToken);
+router.post('/refresh', authLimiter, refreshToken);
 
 module.exports = router;
