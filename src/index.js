@@ -7,5 +7,7 @@ const PORT = process.env.PORT || 8080;
 
 app.listen(PORT, async () => {
     await dbConnect();
-    console.log("Server is running on port http://localhost:" + PORT);
+    const env = process.env.NODE_ENV || 'development';
+    const url = env === 'production' ? `port ${PORT}` : `http://localhost:${PORT}`;
+    console.log(`Server is running on ${url} [${env}]`);
 });
