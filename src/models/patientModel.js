@@ -4,7 +4,7 @@ const { emergencyContactSchema } = require('./emergencyContactSchema');
 const patientSchema = new mongoose.Schema({
     firstName: {
         type: String,
-        required: [true, 'First name is required.'],
+        required: [true, 'First name is required'],
         trim: true,
     },
     lastName: {

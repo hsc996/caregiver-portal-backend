@@ -4,9 +4,9 @@ const mongoose = require("mongoose");
 const UserSchema = new mongoose.Schema({
     username: {
         type: String,
-        required: [true, 'Username is required.'],
+        required: [true, 'Username is required'],
         unique: true,
-        minLength: [3, 'Username must be at least 3 characters long.'],
+        minLength: [3, 'Username must be at least 3 characters long'],
         trim: true,
         index: true
     },
@@ -16,13 +16,13 @@ const UserSchema = new mongoose.Schema({
         unique: true,
         trim: true,
         lowercase: true,
-        match: [/^[^\s@]+@[^\s@]+\.[^\s@]+$/, 'Please enter a valid email address.'],
+        match: [/^[^\s@]+@[^\s@]+\.[^\s@]+$/, 'Please enter a valid email address'],
         index: true
     },
     password: {
         type: String,
         required: true,
-        minLength: [8, 'Password must be at least 8 characters.'],
+        minLength: [8, 'Password must be at least 8 characters'],
         validate: {
             validator: function(password){
                 if (password.startsWith('$2b$')) {
@@ -31,7 +31,7 @@ const UserSchema = new mongoose.Schema({
                 const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
                 return passwordRegex.test(password);
             },
-            message: 'Password must contain at least 8 characters, including uppercase, lowercase, number, and special character.'
+            message: 'Password must contain at least 8 characters, including uppercase, lowercase, number, and special character'
         }
     },
     role: {
