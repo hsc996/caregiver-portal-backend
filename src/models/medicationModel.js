@@ -1,6 +1,6 @@
 const mongoose = require("mongoose");
 
-// This schema is for admisitrative record purposes only.
+// Administrative record of each medication administration event.
 
 const medicationSchema = new mongoose.Schema({
     patientId: {
@@ -10,11 +10,13 @@ const medicationSchema = new mongoose.Schema({
     },
     medicationName: {
         type: String,
-        required: true
+        required: true,
+        trim: true
     },
     dosage: {
         type: String,
-        required: true
+        required: true,
+        trim: true
     },
     route: {
         type: String,
@@ -27,7 +29,6 @@ const medicationSchema = new mongoose.Schema({
     },
     actualAdministrationTime: {
         type: Date,
-        required: true,
         default: Date.now
     },
     administeredBy: {
@@ -55,10 +56,8 @@ const medicationSchema = new mongoose.Schema({
 }, { timestamps: true });
 
 medicationSchema.index({ patientId: 1, actualAdministrationTime: -1 });
-medicationSchema.index({ redBy: 1, actualAdministrationTime: -1 });
+medicationSchema.index({ administeredBy: 1, actualAdministrationTime: -1 });
 
 const MedicationModel = mongoose.model('Medications', medicationSchema);
 
-module.exports = {
-    MedicationModel
-}
+module.exports = { MedicationModel };

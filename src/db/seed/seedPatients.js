@@ -81,16 +81,14 @@ async function seedPatients(caregiverIds) {
       ],
       emergencyContacts: [
         {
-          firstName: "Sarah",
-          lastName: "Johnson",
+          name: "Sarah Johnson",
           relationship: "Daughter",
           phoneNumber: "555-0101",
           email: "sarah.johnson@example.com",
           isPrimary: true,
         },
         {
-          firstName: "Michael",
-          lastName: "Johnson",
+          name: "Michael Johnson",
           relationship: "Son",
           phoneNumber: "555-0102",
           email: "michael.johnson@example.com",
@@ -98,10 +96,8 @@ async function seedPatients(caregiverIds) {
         },
       ],
       caregivers: [
-        {
-          userId: caregiverIds[0],
-          role: "admin",
-        },
+        { userId: caregiverIds[0], role: "admin" },
+        { userId: caregiverIds[1], role: "viewer" },
       ],
       isActive: true,
     },
@@ -190,8 +186,7 @@ async function seedPatients(caregiverIds) {
       ],
       emergencyContacts: [
         {
-          firstName: "Linda",
-          lastName: "Chen",
+          name: "Linda Chen",
           relationship: "Wife",
           phoneNumber: "555-0201",
           email: "linda.chen@example.com",
@@ -199,10 +194,9 @@ async function seedPatients(caregiverIds) {
         },
       ],
       caregivers: [
-        {
-          userId: caregiverIds[1] || caregiverIds[0],
-          role: "admin",
-        },
+        { userId: caregiverIds[0], role: "admin" },
+        { userId: caregiverIds[1], role: "viewer" },
+        { userId: caregiverIds[2], role: "viewer" },
       ],
       isActive: true,
     },
@@ -280,16 +274,14 @@ async function seedPatients(caregiverIds) {
       ],
       emergencyContacts: [
         {
-          firstName: "James",
-          lastName: "Williams",
+          name: "James Williams",
           relationship: "Husband",
           phoneNumber: "555-0301",
           email: "james.williams@example.com",
           isPrimary: true,
         },
         {
-          firstName: "Emma",
-          lastName: "Williams",
+          name: "Emma Williams",
           relationship: "Daughter",
           phoneNumber: "555-0302",
           email: "emma.williams@example.com",
@@ -297,10 +289,8 @@ async function seedPatients(caregiverIds) {
         },
       ],
       caregivers: [
-        {
-          userId: caregiverIds[0],
-          role: "admin",
-        },
+        { userId: caregiverIds[0], role: "admin" },
+        { userId: caregiverIds[2], role: "viewer" },
       ],
       isActive: true,
     },
@@ -366,8 +356,7 @@ async function seedPatients(caregiverIds) {
       ],
       emergencyContacts: [
         {
-          firstName: "Rosa",
-          lastName: "Martinez",
+          name: "Rosa Martinez",
           relationship: "Daughter",
           phoneNumber: "555-0401",
           email: "rosa.martinez@example.com",
@@ -375,10 +364,8 @@ async function seedPatients(caregiverIds) {
         },
       ],
       caregivers: [
-        {
-          userId: caregiverIds[1] || caregiverIds[0],
-          role: "admin",
-        },
+        { userId: caregiverIds[0], role: "admin" },
+        { userId: caregiverIds[1], role: "viewer" },
       ],
       isActive: true,
     },
@@ -474,16 +461,14 @@ async function seedPatients(caregiverIds) {
       ],
       emergencyContacts: [
         {
-          firstName: "Thomas",
-          lastName: "Thompson",
+          name: "Thomas Thompson",
           relationship: "Son",
           phoneNumber: "555-0501",
           email: "thomas.thompson@example.com",
           isPrimary: true,
         },
         {
-          firstName: "Alice",
-          lastName: "Davis",
+          name: "Alice Davis",
           relationship: "Daughter",
           phoneNumber: "555-0502",
           email: "alice.davis@example.com",
@@ -491,10 +476,9 @@ async function seedPatients(caregiverIds) {
         },
       ],
       caregivers: [
-        {
-          userId: caregiverIds[0],
-          role: "admin",
-        },
+        { userId: caregiverIds[0], role: "admin" },
+        { userId: caregiverIds[1], role: "viewer" },
+        { userId: caregiverIds[2], role: "viewer" },
       ],
       isActive: true,
     },

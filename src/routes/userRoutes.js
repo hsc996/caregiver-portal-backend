@@ -3,8 +3,10 @@ const router = express.Router();
 const {
     getAllUsersController,
     updateUserDataController,
-    softDeleteUser
+    softDeleteUser,
+    uploadProfileImageController
 } = require('../controllers/UserController');
+const { uploadProfileImage } = require('../utils/upload');
 const { paginationMiddleware,
         authenticateUser,
         authorizeOwnerorAdmin
@@ -257,5 +259,7 @@ router.patch('/:id', authenticateUser, authorizeOwnerorAdmin, updateUserDataCont
  */
 
 router.patch('/delete/:id', authenticateUser, authorizeOwnerorAdmin, softDeleteUser);
+
+router.patch('/:id/profile-image', authenticateUser, authorizeOwnerorAdmin, uploadProfileImage, uploadProfileImageController);
 
 module.exports = router;

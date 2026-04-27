@@ -35,5 +35,5 @@ const EmergencyContactSchema = new mongoose.Schema({
 }, { _id: false });
 
 module.exports = {
-    EmergencyContactSchema
+    emergencyContactSchema: EmergencyContactSchema
 }

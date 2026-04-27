@@ -47,6 +47,9 @@ app.use('/auth', authRoutes);
 const userRoutes = require('./routes/userRoutes');
 app.use('/user', userRoutes);
 
+const patientRoutes = require('./routes/patientRoutes');
+app.use('/patient', patientRoutes);
+
 app.use(errorHandlingMiddleware);
 
 module.exports = {

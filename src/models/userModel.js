@@ -66,6 +66,10 @@ const UserSchema = new mongoose.Schema({
     passwordResetExpires: {
         type: Date
     },
+    profileImg: {
+        type: String,
+        default: null
+    },
 }, { timestamps: true })
 
 // Compound index for common queries

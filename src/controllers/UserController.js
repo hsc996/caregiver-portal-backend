@@ -4,6 +4,7 @@ const {
     UpdateUserByQuery,
     DeleteUserByQuery
 } = require('../services/userService');
+const { AppError } = require('../functions/helperFunctions');
 
 
 /** 
@@ -85,8 +86,32 @@ async function softDeleteUser(req, res, next){
 }
 
 
+async function uploadProfileImageController(req, res, next) {
+    try {
+        if (!req.file) {
+            throw new AppError("No image file provided.", 400);
+        }
+
+        const { id } = req.params;
+        const updatedUser = await UpdateUserByQuery(
+            { _id: id },
+            { profileImg: req.file.path }
+        );
+
+        res.status(200).json({
+            success: true,
+            data: updatedUser,
+            message: "Profile image updated successfully."
+        });
+    } catch (error) {
+        next(error);
+    }
+}
+
+
 module.exports = {
     getAllUsersController,
     updateUserDataController,
-    softDeleteUser
+    softDeleteUser,
+    uploadProfileImageController
 }

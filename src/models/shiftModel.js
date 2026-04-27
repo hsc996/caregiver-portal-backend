@@ -21,23 +21,26 @@ const shiftSchema = new mongoose.Schema({
         required: true
     },
     scheduledStart: {
-        type: String,  // "08:00"
-        required: true
+        type: String,
+        required: true,
+        match: [/^\d{2}:\d{2}$/, 'scheduledStart must be in HH:MM format']
     },
     scheduledEnd: {
         type: String,
-        required: true
+        required: true,
+        match: [/^\d{2}:\d{2}$/, 'scheduledEnd must be in HH:MM format']
     },
-    actualClockIn: {
-        type: Date
-    },
-    actualClockOut: {
-        type: Date
-    },
+    actualClockIn:  Date,
+    actualClockOut: Date,
     status: {
         type: String,
         enum: ['scheduled', 'in-progress', 'completed', 'cancelled', 'no-show'],
         default: 'scheduled'
+    },
+    notes: {
+        type: String,
+        trim: true,
+        default: null
     }
 }, { timestamps: true });
 
@@ -46,6 +49,4 @@ shiftSchema.index({ caregiverId: 1, date: -1 });
 
 const ShiftModel = mongoose.model('Shift', shiftSchema);
 
-module.exports = {
-    ShiftModel
-}
+module.exports = { ShiftModel };
