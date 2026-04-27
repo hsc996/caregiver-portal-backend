@@ -15,8 +15,8 @@ const {
 */
 async function signup(req, res, next){
   try {
-    const { username, email, password } = req.body;
-    const { user, token, refreshToken } = await registerUserService({ username, email, password});
+    const { firstName, lastName, username, email, password } = req.body;
+    const { user, token, refreshToken } = await registerUserService({ firstName, lastName, username, email, password});
 
     res.status(201).json({
       success: true,

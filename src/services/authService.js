@@ -10,8 +10,8 @@ const { AppError } = require('../functions/helperFunctions');
 const { sendPasswordResetEmail } = require('./emailService');
 
 
-async function registerUserService({ username, email, password}){
-    if (!username || !email || !password){
+async function registerUserService({ firstName, lastName, username, email, password}){
+    if (!firstName || !lastName || !username || !email || !password){
         throw new AppError("Missing required fields.", 400);
     }
 
@@ -30,9 +30,11 @@ async function registerUserService({ username, email, password}){
 
     // Create new user
     let newUser = await UserModel.create({
-      username: username,
-      email: email,
-      password: password,
+      firstName,
+      lastName,
+      username,
+      email,
+      password,
       role: 'User'
     });
 

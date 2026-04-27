@@ -4,18 +4,24 @@ const mongoose = require("mongoose");
 async function seedUsers(){
     const users = [
         {
+            firstName: "Hannah",
+            lastName: "Scaife",
             username: "first_user",
             email: "han.scaife@gmail.com",
             password: "PassWORDsec123!",
             role: "Admin"
         },
         {
+            firstName: "Sarah",
+            lastName: "Jones",
             username: "second_user",
             email: "user2@gmail.com",
             password: "CowboyPAssword22!",
             role: "User"
         },
         {
+            firstName: "James",
+            lastName: "Carter",
             username: "third_user",
             email: "user3@gmail.com",
             password: "PoltergeistPW344!",

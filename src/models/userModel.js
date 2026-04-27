@@ -2,6 +2,16 @@ const { hashPassword } = require("../functions/jwtFunctions");
 const mongoose = require("mongoose");
 
 const UserSchema = new mongoose.Schema({
+    firstName: {
+        type: String,
+        required: [true, 'First name is required'],
+        trim: true,
+    },
+    lastName: {
+        type: String,
+        required: [true, 'Last name is required'],
+        trim: true,
+    },
     username: {
         type: String,
         required: [true, 'Username is required'],

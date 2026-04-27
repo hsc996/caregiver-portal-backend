@@ -25,16 +25,17 @@ async function GetShiftsByPatient(patientId, year, month) {
 
     const shifts = await ShiftModel
         .find({ patientId, date: { $gte: start, $lt: end } })
-        .populate('caregiverId', 'username')
+        .populate('caregiverId', 'firstName lastName')
         .sort({ date: 1, scheduledStart: 1 });
 
     const grouped = {};
     for (const shift of shifts) {
         const key = toDateKey(shift.date);
         if (!grouped[key]) grouped[key] = [];
+        const cg = shift.caregiverId;
         grouped[key].push({
             id: shift._id,
-            caregiver: shift.caregiverId?.username ?? 'Unknown',
+            caregiver: cg ? `${cg.firstName} ${cg.lastName}`.trim() : 'Unknown',
             time: `${formatTime(shift.scheduledStart)} – ${formatTime(shift.scheduledEnd)}`,
             type: SHIFT_LABELS[shift.shiftType] ?? shift.shiftType,
             status: shift.status,
