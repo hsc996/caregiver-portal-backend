@@ -142,23 +142,21 @@ async function resetPasswordService({token, newPassword}){
     );
   }
 
-  // Hash the token in the URLto compared w stored hash
   const hashedToken = crypto.createHash('sha256').update(token).digest('hex');
 
-  // Find user with valid token that hasn't expired
-  const user = await UserModel.findOne({
-    passwordResetToken: hashedToken,
-    passwordResetExpires: { $gt: Date.now() }
-  });
+  // Atomically claim the token — clears it in the same operation so concurrent
+  // requests with the same token can't both succeed.
+  const user = await UserModel.findOneAndUpdate(
+    { passwordResetToken: hashedToken, passwordResetExpires: { $gt: Date.now() } },
+    { $unset: { passwordResetToken: '', passwordResetExpires: '' } },
+    { new: true }
+  );
 
   if (!user){
     throw new AppError("Invalid or expired reset token.", 400);
   }
 
-  // Hash new password and update user
   user.password = newPassword;
-  user.passwordResetToken = undefined;
-  user.passwordResetExpires = undefined;
   user.lastPasswordChange = new Date();
   await user.save();
 
