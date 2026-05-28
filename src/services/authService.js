@@ -100,7 +100,7 @@ async function requestPasswordResetService({email}){
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
   const validEmail = emailRegex.test(email);
   if (!validEmail){
-    throw new AppError("Invalid email format.", 401);
+    throw new AppError("Invalid email format.", 400);
   }
 
   const resetToken = crypto.randomBytes(32).toString('hex');

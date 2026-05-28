@@ -57,7 +57,7 @@ function paginationMiddleware(req, res, next) {
 
   req.pagination = {
     page: Number.isInteger(page) && page > 0 ? page : 1,
-    limit: Number.isInteger(limit) && limit > 0 ? limit : 10,
+    limit: Number.isInteger(limit) && limit > 0 ? Math.min(limit, 100) : 10,
   };
 
   req.pagination.skip = (req.pagination.page - 1) * req.pagination.limit;
