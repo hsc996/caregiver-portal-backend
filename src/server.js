@@ -1,6 +1,7 @@
 const express = require("express");
 const app = express();
 const cors = require('cors');
+const helmet = require('helmet');
 const { errorHandlingMiddleware } = require("./utils/middleware");
 
 const allowedOrigins = [
@@ -24,6 +25,7 @@ const corsOptions = {
     optionsSuccessStatus: 200,
 };
 
+app.use(helmet());
 app.use(cors(corsOptions));
 
 app.use(express.json());
