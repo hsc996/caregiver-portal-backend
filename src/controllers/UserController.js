@@ -49,8 +49,12 @@ async function getAllUsersController(req, res, next){
  */
 async function updateUserDataController(req, res, next){
     try {
-        const { id }  = req.params;
-        const updatedData = req.body;
+        const { id } = req.params;
+        const allowed = ['firstName', 'lastName', 'username', 'email'];
+        const updatedData = {};
+        allowed.forEach(field => {
+            if (req.body[field] !== undefined) updatedData[field] = req.body[field];
+        });
 
         const updatedUser = await UpdateUserByQuery(
             {_id: id},

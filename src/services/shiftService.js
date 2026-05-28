@@ -35,7 +35,7 @@ async function GetShiftsByPatient(patientId, year, month) {
         const cg = shift.caregiverId;
         grouped[key].push({
             id: shift._id,
-            caregiver: cg ? `${cg.firstName} ${cg.lastName}`.trim() : 'Unknown',
+            caregiver: cg ? [cg.firstName, cg.lastName].filter(Boolean).join(' ') || 'Unknown' : 'Unknown',
             time: `${formatTime(shift.scheduledStart)} – ${formatTime(shift.scheduledEnd)}`,
             type: SHIFT_LABELS[shift.shiftType] ?? shift.shiftType,
             status: shift.status,

@@ -1,5 +1,6 @@
 const { GetShiftsByPatient } = require('../services/shiftService');
 const { requireCaregiverAccess } = require('../services/patientService');
+const { AppError } = require('../functions/helperFunctions');
 
 async function getPatientShiftsController(req, res, next) {
     try {
@@ -11,6 +12,9 @@ async function getPatientShiftsController(req, res, next) {
         let year, mon;
         if (month && /^\d{4}-\d{2}$/.test(month)) {
             [year, mon] = month.split('-').map(Number);
+            if (mon < 1 || mon > 12) {
+                throw new AppError('Invalid month value. Must be between 01 and 12.', 400);
+            }
         } else {
             const now = new Date();
             year = now.getFullYear();

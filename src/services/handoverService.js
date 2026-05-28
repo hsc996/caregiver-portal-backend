@@ -14,7 +14,7 @@ async function GetHandoverNotesByDate(patientId, date) {
     return notes.map((n) => ({
         id: n._id,
         caregiver: n.userId
-            ? `${n.userId.firstName} ${n.userId.lastName}`.trim()
+            ? [n.userId.firstName, n.userId.lastName].filter(Boolean).join(' ') || 'Unknown'
             : 'Unknown',
         submittedAt: n.createdAt,
         title: n.title,
