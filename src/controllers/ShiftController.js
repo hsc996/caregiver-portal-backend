@@ -1,9 +1,12 @@
 const { GetShiftsByPatient } = require('../services/shiftService');
+const { requireCaregiverAccess } = require('../services/patientService');
 
 async function getPatientShiftsController(req, res, next) {
     try {
         const { id } = req.params;
         const { month } = req.query; // expects "YYYY-MM"
+
+        await requireCaregiverAccess(id, req.user.id, req.user.role);
 
         let year, mon;
         if (month && /^\d{4}-\d{2}$/.test(month)) {

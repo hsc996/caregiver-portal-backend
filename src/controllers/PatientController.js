@@ -14,7 +14,7 @@ async function getAllPatientsController(req, res, next) {
 async function getPatientController(req, res, next) {
     try {
         const { id } = req.params;
-        const patient = await GetPatientById(id);
+        const patient = await GetPatientById(id, req.user.id, req.user.role);
         res.status(200).json({ success: true, data: patient });
     } catch (error) {
         next(error);
@@ -29,7 +29,7 @@ async function updatePatientController(req, res, next) {
         allowed.forEach(field => {
             if (req.body[field] !== undefined) data[field] = req.body[field];
         });
-        const patient = await UpdatePatientById(id, data);
+        const patient = await UpdatePatientById(id, data, req.user.id, req.user.role);
         res.status(200).json({ success: true, data: patient, message: 'Patient updated successfully.' });
     } catch (error) {
         next(error);
@@ -40,7 +40,7 @@ async function uploadPatientImageController(req, res, next) {
     try {
         if (!req.file) throw new AppError('No image file provided', 400);
         const { id } = req.params;
-        const patient = await UpdatePatientById(id, { profileImg: req.file.path });
+        const patient = await UpdatePatientById(id, { profileImg: req.file.path }, req.user.id, req.user.role);
         res.status(200).json({ success: true, data: patient, message: 'Profile image updated successfully.' });
     } catch (error) {
         next(error);
