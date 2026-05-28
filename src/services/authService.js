@@ -9,6 +9,8 @@ const {
 const { AppError } = require('../functions/helperFunctions');
 const { sendPasswordResetEmail } = require('./emailService');
 
+const PASSWORD_REGEX = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
+
 function hashToken(token) {
     return crypto.createHash('sha256').update(token).digest('hex');
 }
@@ -131,6 +133,13 @@ async function requestPasswordResetService({email}){
 async function resetPasswordService({token, newPassword}){
   if (!token || !newPassword){
     throw new AppError("Reset token and new password required.", 400);
+  }
+
+  if (!PASSWORD_REGEX.test(newPassword)){
+    throw new AppError(
+      "Password must be at least 8 characters and include uppercase, lowercase, a number, and a special character (@$!%*?&).",
+      400
+    );
   }
 
   // Hash the token in the URLto compared w stored hash
