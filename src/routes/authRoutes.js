@@ -6,6 +6,7 @@ const { signup,
     resetPassword,
     refreshToken
 } = require('../controllers/AuthController');
+const { authenticateUser, authorizeRoles } = require('../utils/middleware');
 const rateLimit = require("express-rate-limit");
 
 const authLimiter = rateLimit({
@@ -65,7 +66,7 @@ const authLimiter = rateLimit({
  *       500:
  *         description: Unable to register new user
  */
-router.post('/signup', authLimiter, signup);
+router.post('/signup', authLimiter, authenticateUser, authorizeRoles('Admin'), signup);
 
 /**
  * @swagger
