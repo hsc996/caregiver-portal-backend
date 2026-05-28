@@ -120,6 +120,9 @@ function authorizeOwnerorAdmin(req, res, next) {
   }
 
   const resourceId = req.params.id || req.params.userId;
+  if (!resourceId) {
+    return next(new AppError("Resource ID missing from request.", 400));
+  }
   const isOwner = req.user.id.toString() === resourceId.toString();
   const isAdmin = req.user.role === "Admin";
 
