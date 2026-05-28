@@ -4,7 +4,8 @@ const { signup,
     signin,
     requestPasswordReset,
     resetPassword,
-    refreshToken
+    refreshToken,
+    logout
 } = require('../controllers/AuthController');
 const { authenticateUser, authorizeRoles } = require('../utils/middleware');
 const rateLimit = require("express-rate-limit");
@@ -279,5 +280,7 @@ router.post('/reset-password', authLimiter, resetPassword);
  *         description: Server error
  */
 router.post('/refresh', authLimiter, refreshToken);
+
+router.post('/logout', authenticateUser, logout);
 
 module.exports = router;

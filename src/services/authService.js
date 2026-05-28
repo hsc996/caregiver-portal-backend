@@ -1,6 +1,6 @@
 const { UserModel } = require('../models/userModel');
 const crypto = require("crypto");
-const { 
+const {
     generateJWT,
     comparePassword,
     generateRefreshToken,
@@ -8,6 +8,10 @@ const {
 } = require('../functions/jwtFunctions');
 const { AppError } = require('../functions/helperFunctions');
 const { sendPasswordResetEmail } = require('./emailService');
+
+function hashToken(token) {
+    return crypto.createHash('sha256').update(token).digest('hex');
+}
 
 
 async function registerUserService({ firstName, lastName, username, email, password}){
@@ -41,6 +45,8 @@ async function registerUserService({ firstName, lastName, username, email, passw
     // Generate JWT + refresh token
     const token = generateJWT(newUser._id, newUser.username, newUser.role);
     const refreshToken = generateRefreshToken(newUser._id);
+
+    await UserModel.updateOne({ _id: newUser._id }, { refreshTokenHash: hashToken(refreshToken) });
 
     return { user: newUser.toSafeObject(), token, refreshToken };
 }
@@ -76,6 +82,8 @@ async function loginUserService({email, password}){
     // Create new JWT + refresh token
     const token = generateJWT(user._id, user.username, user.role);
     const refreshToken = generateRefreshToken(user._id);
+
+    await UserModel.updateOne({ _id: user._id }, { refreshTokenHash: hashToken(refreshToken) });
 
     return { user: user.toSafeObject(), token, refreshToken };
 }
@@ -167,9 +175,14 @@ async function refreshTokenService({ refreshToken }){
     if (!user.isActive){
       throw new AppError("This account has been deactivated.", 403);
     }
+    if (!user.refreshTokenHash || user.refreshTokenHash !== hashToken(refreshToken)){
+      throw new AppError("Invalid or expired refresh token.", 401);
+    }
 
     const newAccessToken = generateJWT(user._id, user.username, user.role);
     const newRefreshToken = generateRefreshToken(user._id);
+
+    await UserModel.updateOne({ _id: user._id }, { refreshTokenHash: hashToken(newRefreshToken) });
 
     return {
       token: newAccessToken,
@@ -183,10 +196,15 @@ async function refreshTokenService({ refreshToken }){
   }
 }
 
+async function logoutService(userId) {
+    await UserModel.updateOne({ _id: userId }, { refreshTokenHash: null });
+}
+
 module.exports = {
     loginUserService,
     registerUserService,
     requestPasswordResetService,
     resetPasswordService,
-    refreshTokenService
+    refreshTokenService,
+    logoutService
 }

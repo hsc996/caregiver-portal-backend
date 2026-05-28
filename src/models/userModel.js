@@ -80,6 +80,10 @@ const UserSchema = new mongoose.Schema({
         type: String,
         default: null
     },
+    refreshTokenHash: {
+        type: String,
+        default: null
+    },
 }, { timestamps: true })
 
 // Compound index for common queries
@@ -105,6 +109,7 @@ UserSchema.methods.toSafeObject = function(){
     delete obj.password;
     delete obj.passwordResetToken;
     delete obj.passwordResetExpires;
+    delete obj.refreshTokenHash;
     delete obj.__v;
     return obj;
 };

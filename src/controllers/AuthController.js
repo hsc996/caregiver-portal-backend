@@ -3,7 +3,8 @@ const {
   loginUserService,
   requestPasswordResetService,
   resetPasswordService,
-  refreshTokenService
+  refreshTokenService,
+  logoutService
  } = require('../services/authService');
 
 
@@ -119,10 +120,20 @@ async function refreshToken(req, res, next){
 }
 
 
+async function logout(req, res, next) {
+  try {
+    await logoutService(req.user.id);
+    res.status(200).json({ success: true, message: "Logged out successfully." });
+  } catch (error) {
+    next(error);
+  }
+}
+
 module.exports = {
     signin,
     signup,
     resetPassword,
     requestPasswordReset,
-    refreshToken
+    refreshToken,
+    logout
 }
