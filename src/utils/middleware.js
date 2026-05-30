@@ -86,6 +86,8 @@ function authenticateUser(req, res, next) {
       id: payload.id,
       username: payload.username,
       role: payload.role,
+      firstName: payload.firstName ?? '',
+      lastName: payload.lastName ?? '',
     };
 
     next();

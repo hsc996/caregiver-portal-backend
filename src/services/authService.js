@@ -45,7 +45,7 @@ async function registerUserService({ firstName, lastName, username, email, passw
     });
 
     // Generate JWT + refresh token
-    const token = generateJWT(newUser._id, newUser.username, newUser.role);
+    const token = generateJWT(newUser._id, newUser.username, newUser.role, newUser.firstName, newUser.lastName);
     const refreshToken = generateRefreshToken(newUser._id);
 
     await UserModel.updateOne({ _id: newUser._id }, { refreshTokenHash: hashToken(refreshToken) });
@@ -82,7 +82,7 @@ async function loginUserService({email, password}){
     );
 
     // Create new JWT + refresh token
-    const token = generateJWT(user._id, user.username, user.role);
+    const token = generateJWT(user._id, user.username, user.role, user.firstName, user.lastName);
     const refreshToken = generateRefreshToken(user._id);
 
     await UserModel.updateOne({ _id: user._id }, { refreshTokenHash: hashToken(refreshToken) });
@@ -186,7 +186,7 @@ async function refreshTokenService({ refreshToken }){
       throw new AppError("Invalid or expired refresh token.", 401);
     }
 
-    const newAccessToken = generateJWT(user._id, user.username, user.role);
+    const newAccessToken = generateJWT(user._id, user.username, user.role, user.firstName, user.lastName);
     const newRefreshToken = generateRefreshToken(user._id);
 
     await UserModel.updateOne({ _id: user._id }, { refreshTokenHash: hashToken(newRefreshToken) });

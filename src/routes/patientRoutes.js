@@ -3,6 +3,7 @@ const router = express.Router();
 const { getAllPatientsController, getPatientController, updatePatientController, uploadPatientImageController } = require('../controllers/PatientController');
 const { getPatientShiftsController } = require('../controllers/ShiftController');
 const { getHandoverNotesController } = require('../controllers/HandoverController');
+const { createMedicationAdministrationController, getMedicationAdministrationsController } = require('../controllers/MedicationController');
 const { uploadProfileImage } = require('../utils/upload');
 const { authenticateUser } = require('../utils/middleware');
 
@@ -361,5 +362,8 @@ router.patch('/:id/profile-image', authenticateUser, uploadProfileImage, uploadP
 router.get('/:id/shifts', authenticateUser, getPatientShiftsController);
 
 router.get('/:id/handover-notes', authenticateUser, getHandoverNotesController);
+
+router.get('/:id/medication-administrations', authenticateUser, getMedicationAdministrationsController);
+router.post('/:id/medication-administrations', authenticateUser, createMedicationAdministrationController);
 
 module.exports = router;
