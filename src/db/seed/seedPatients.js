@@ -18,7 +18,7 @@ async function seedPatients(caregiverIds) {
         {
           name: "Lisinopril",
           dosage: "10mg",
-          frequency: "Once daily",
+          frequency: "Daily",
           scheduledTimes: ["08:00"],
           route: "Oral",
           prescribedBy: "Dr. Sarah Mitchell",
@@ -29,7 +29,7 @@ async function seedPatients(caregiverIds) {
         {
           name: "Aspirin",
           dosage: "81mg",
-          frequency: "Once daily",
+          frequency: "Daily",
           scheduledTimes: ["08:00"],
           route: "Oral",
           prescribedBy: "Dr. Sarah Mitchell",
@@ -40,7 +40,7 @@ async function seedPatients(caregiverIds) {
         {
           name: "Vitamin D",
           dosage: "2000 IU",
-          frequency: "Once daily",
+          frequency: "Daily",
           scheduledTimes: ["08:00"],
           route: "Oral",
           prescribedBy: "Dr. Sarah Mitchell",
@@ -52,7 +52,7 @@ async function seedPatients(caregiverIds) {
       careTaskSchedule: [
         {
           task: "Blood pressure check",
-          frequency: "Twice daily",
+          frequency: "BD",
           category: "medication",
           instructions:
             "Check before morning and evening medications. Record readings.",
@@ -66,7 +66,7 @@ async function seedPatients(caregiverIds) {
         },
         {
           task: "Walk with walker",
-          frequency: "Three times daily",
+          frequency: "TDS",
           category: "mobility",
           instructions:
             "Short walks around unit. Monitor for dizziness or fatigue.",
@@ -112,7 +112,7 @@ async function seedPatients(caregiverIds) {
         {
           name: "Metformin",
           dosage: "500mg",
-          frequency: "Twice daily",
+          frequency: "BD",
           scheduledTimes: ["08:00", "18:00"],
           route: "Oral",
           prescribedBy: "Dr. James Park",
@@ -123,7 +123,7 @@ async function seedPatients(caregiverIds) {
         {
           name: "Insulin (Lantus)",
           dosage: "20 units",
-          frequency: "Once daily",
+          frequency: "Daily",
           scheduledTimes: ["22:00"],
           route: "Subcutaneous injection",
           prescribedBy: "Dr. James Park",
@@ -134,7 +134,7 @@ async function seedPatients(caregiverIds) {
         {
           name: "Atorvastatin",
           dosage: "20mg",
-          frequency: "Once daily",
+          frequency: "Daily",
           scheduledTimes: ["20:00"],
           route: "Oral",
           prescribedBy: "Dr. James Park",
@@ -145,7 +145,7 @@ async function seedPatients(caregiverIds) {
         {
           name: "Ibuprofen",
           dosage: "400mg",
-          frequency: "As needed",
+          frequency: "PRN",
           scheduledTimes: ["08:00", "20:00"],
           route: "Oral",
           prescribedBy: "Dr. James Park",
@@ -171,7 +171,7 @@ async function seedPatients(caregiverIds) {
         },
         {
           task: "Transfer assistance",
-          frequency: "As needed",
+          frequency: "PRN",
           category: "mobility",
           instructions:
             "Use gait belt. Allow patient to set pace. Monitor for pain.",
@@ -211,7 +211,7 @@ async function seedPatients(caregiverIds) {
         {
           name: "Donepezil",
           dosage: "10mg",
-          frequency: "Once daily",
+          frequency: "Daily",
           scheduledTimes: ["20:00"],
           route: "Oral",
           prescribedBy: "Dr. Emily Rogers",
@@ -222,7 +222,7 @@ async function seedPatients(caregiverIds) {
         {
           name: "Memantine",
           dosage: "10mg",
-          frequency: "Twice daily",
+          frequency: "BD",
           scheduledTimes: ["08:00", "20:00"],
           route: "Oral",
           prescribedBy: "Dr. Emily Rogers",
@@ -233,7 +233,7 @@ async function seedPatients(caregiverIds) {
         {
           name: "Melatonin",
           dosage: "3mg",
-          frequency: "Once daily",
+          frequency: "Daily",
           scheduledTimes: ["21:00"],
           route: "Oral",
           prescribedBy: "Dr. Emily Rogers",
@@ -259,7 +259,7 @@ async function seedPatients(caregiverIds) {
         },
         {
           task: "Orientation reminders",
-          frequency: "As needed",
+          frequency: "PRN",
           category: "other",
           instructions:
             "Gentle reminders of date, time, location. Use calendar and family photos.",
@@ -305,7 +305,7 @@ async function seedPatients(caregiverIds) {
         {
           name: "Warfarin",
           dosage: "5mg",
-          frequency: "Once daily",
+          frequency: "Daily",
           scheduledTimes: ["18:00"],
           route: "Oral",
           prescribedBy: "Dr. Thomas Chen",
@@ -316,7 +316,7 @@ async function seedPatients(caregiverIds) {
         {
           name: "Multivitamin",
           dosage: "1 tablet",
-          frequency: "Once daily",
+          frequency: "Daily",
           scheduledTimes: ["08:00"],
           route: "Oral",
           prescribedBy: "Dr. Thomas Chen",
@@ -341,7 +341,7 @@ async function seedPatients(caregiverIds) {
         },
         {
           task: "Range of motion exercises",
-          frequency: "Twice daily",
+          frequency: "BD",
           category: "mobility",
           instructions:
             "Upper and lower extremities. Follow PT plan. 15 minutes each session.",
@@ -380,7 +380,7 @@ async function seedPatients(caregiverIds) {
         {
           name: "Furosemide",
           dosage: "40mg",
-          frequency: "Once daily",
+          frequency: "Daily",
           scheduledTimes: ["08:00"],
           route: "Oral",
           prescribedBy: "Dr. Michael Stevens",
@@ -391,7 +391,7 @@ async function seedPatients(caregiverIds) {
         {
           name: "Carvedilol",
           dosage: "25mg",
-          frequency: "Twice daily",
+          frequency: "BD",
           scheduledTimes: ["08:00", "20:00"],
           route: "Oral",
           prescribedBy: "Dr. Michael Stevens",
@@ -402,7 +402,7 @@ async function seedPatients(caregiverIds) {
         {
           name: "Digoxin",
           dosage: "0.125mg",
-          frequency: "Once daily",
+          frequency: "Daily",
           scheduledTimes: ["08:00"],
           route: "Oral",
           prescribedBy: "Dr. Michael Stevens",
@@ -413,7 +413,7 @@ async function seedPatients(caregiverIds) {
         {
           name: "Nitroglycerin",
           dosage: "0.4mg",
-          frequency: "As needed",
+          frequency: "PRN",
           scheduledTimes: [],
           route: "Sublingual",
           prescribedBy: "Dr. Michael Stevens",
@@ -425,7 +425,7 @@ async function seedPatients(caregiverIds) {
       careTaskSchedule: [
         {
           task: "Vital signs monitoring",
-          frequency: "Three times daily",
+          frequency: "TDS",
           category: "medication",
           instructions:
             "BP, HR, O2 sat, temp. Record all readings. Alert for abnormals.",

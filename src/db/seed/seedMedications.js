@@ -1,11 +1,12 @@
 const { MedicationModel } = require("../../models/medicationModel");
+const { AppError } = require("../../functions/helperFunctions");
 
 async function seedMedications(caregiverIds, patientIds) {
     if (!caregiverIds || caregiverIds.length === 0) {
-        throw new AppError("No caregiver IDs provided");
+        throw new AppError("No caregiver IDs provided", 400);
     }
     if (!patientIds || patientIds.length === 0) {
-        throw new AppError("No patient IDs provided");
+        throw new AppError("No patient IDs provided", 400);
     }
 
     // Helper function to simulate dates for the past week
@@ -286,7 +287,7 @@ async function seedMedications(caregiverIds, patientIds) {
         medicationName: "Nitroglycerin",
         dosage: "0.4mg",
         route: "Sublingual",
-        scheduledTime: "As needed",
+        scheduledTime: "PRN",
         actualAdministrationTime: getDateDaysAgo(1, 14, 30),
         administeredBy: caregiverIds[0],
         status: "given",
@@ -371,6 +372,86 @@ async function seedMedications(caregiverIds, patientIds) {
         administeredBy: caregiverIds[0],
         status: "given",
         notes: "Weight checked: stable. No edema noted.",
+      },
+
+      // ========== UNVALIDATED RECORDS ==========
+
+      // Margaret Johnson - Validated in error yesterday, caught by second caregiver
+      {
+        patientId: patientIds[0],
+        medicationName: "Aspirin",
+        dosage: "81mg",
+        route: "Oral",
+        scheduledTime: "08:00",
+        actualAdministrationTime: getDateDaysAgo(2, 8, 20),
+        administeredBy: caregiverIds[0],
+        status: "unvalidated",
+        notes: "Logged in error during handover.",
+        unvalidatedAt: getDateDaysAgo(2, 9, 5),
+        unvalidatedBy: caregiverIds[1] || caregiverIds[0],
+        unvalidationReason: "Validated but not administered",
+      },
+
+      // Robert Chen - Wrong dose recorded, corrected by same caregiver
+      {
+        patientId: patientIds[1],
+        medicationName: "Metformin",
+        dosage: "500mg",
+        route: "Oral",
+        scheduledTime: "08:00",
+        actualAdministrationTime: getDateDaysAgo(3, 8, 5),
+        administeredBy: caregiverIds[1] || caregiverIds[0],
+        status: "unvalidated",
+        unvalidatedAt: getDateDaysAgo(3, 8, 30),
+        unvalidatedBy: caregiverIds[1] || caregiverIds[0],
+        unvalidationReason: "Administered in error — wrong dose",
+      },
+
+      // Dorothy Williams - Documentation error, record created for wrong patient
+      {
+        patientId: patientIds[2],
+        medicationName: "Donepezil",
+        dosage: "10mg",
+        route: "Oral",
+        scheduledTime: "20:00",
+        actualAdministrationTime: getDateDaysAgo(1, 20, 0),
+        administeredBy: caregiverIds[0],
+        status: "unvalidated",
+        notes: "Record was created under incorrect patient by mistake.",
+        unvalidatedAt: getDateDaysAgo(1, 20, 45),
+        unvalidatedBy: caregiverIds[0],
+        unvalidationReason: "Documentation error",
+      },
+
+      // Eleanor Thompson - Patient refused after record was already created
+      {
+        patientId: patientIds[4],
+        medicationName: "Carvedilol",
+        dosage: "25mg",
+        route: "Oral",
+        scheduledTime: "20:00",
+        actualAdministrationTime: getDateDaysAgo(4, 20, 0),
+        administeredBy: caregiverIds[1] || caregiverIds[0],
+        status: "unvalidated",
+        notes: "Record submitted prematurely before patient took the dose.",
+        unvalidatedAt: getDateDaysAgo(4, 20, 20),
+        unvalidatedBy: caregiverIds[1] || caregiverIds[0],
+        unvalidationReason: "Patient refused after record was created",
+      },
+
+      // Harold Martinez - Wrong time logged, entered manually
+      {
+        patientId: patientIds[3],
+        medicationName: "Warfarin",
+        dosage: "5mg",
+        route: "Oral",
+        scheduledTime: "18:00",
+        actualAdministrationTime: getDateDaysAgo(5, 18, 0),
+        administeredBy: caregiverIds[0],
+        status: "unvalidated",
+        unvalidatedAt: getDateDaysAgo(5, 19, 10),
+        unvalidatedBy: caregiverIds[2] || caregiverIds[0],
+        unvalidationReason: "Administered in error — wrong time of day",
       },
     ];
 
