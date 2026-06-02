@@ -30,8 +30,28 @@ async function GetMedicationAdministrations(patientId, date) {
 
     return MedicationModel.find({
         patientId,
+        status: 'given',
         actualAdministrationTime: { $gte: start, $lte: end },
     }).populate('administeredBy', 'firstName lastName');
 }
 
-module.exports = { CreateMedicationAdministration, GetMedicationAdministrations };
+async function UnvalidateMedicationAdministration(recordId, userId, reason) {
+    if (!reason || !reason.trim()) {
+        throw new AppError('A reason is required to unvalidate a medication record.', 400);
+    }
+
+    const record = await MedicationModel.findById(recordId);
+    if (!record) throw new AppError('Medication administration record not found.', 404);
+    if (record.status !== 'given') throw new AppError('Only administered medications can be unvalidated.', 400);
+
+    record.status = 'unvalidated';
+    record.unvalidatedAt = new Date();
+    record.unvalidatedBy = userId;
+    record.unvalidationReason = reason.trim();
+    await record.save();
+
+    await record.populate('unvalidatedBy', 'firstName lastName username');
+    return record;
+}
+
+module.exports = { CreateMedicationAdministration, GetMedicationAdministrations, UnvalidateMedicationAdministration };

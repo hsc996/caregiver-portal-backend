@@ -38,7 +38,7 @@ const medicationSchema = new mongoose.Schema({
     },
     status: {
         type: String,
-        enum: ['given', 'refused', 'missed', 'held'],
+        enum: ['given', 'refused', 'missed', 'held', 'unvalidated'],
         required: true
     },
     refusalReason: {
@@ -52,6 +52,17 @@ const medicationSchema = new mongoose.Schema({
     witnessedBy: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'User'
+    },
+    unvalidatedAt: {
+        type: Date
+    },
+    unvalidatedBy: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User'
+    },
+    unvalidationReason: {
+        type: String,
+        trim: true
     }
 }, { timestamps: true });
 

@@ -1,4 +1,4 @@
-const { CreateMedicationAdministration, GetMedicationAdministrations } = require('../services/medicationService');
+const { CreateMedicationAdministration, GetMedicationAdministrations, UnvalidateMedicationAdministration } = require('../services/medicationService');
 const { AppError } = require('../functions/helperFunctions');
 
 async function createMedicationAdministrationController(req, res, next) {
@@ -23,4 +23,16 @@ async function getMedicationAdministrationsController(req, res, next) {
     }
 }
 
-module.exports = { createMedicationAdministrationController, getMedicationAdministrationsController };
+async function unvalidateMedicationAdministrationController(req, res, next) {
+    try {
+        const { recordId } = req.params;
+        const { reason } = req.body;
+        if (!reason) throw new AppError('reason is required.', 400);
+        const record = await UnvalidateMedicationAdministration(recordId, req.user.id, reason);
+        res.status(200).json({ success: true, data: record });
+    } catch (error) {
+        next(error);
+    }
+}
+
+module.exports = { createMedicationAdministrationController, getMedicationAdministrationsController, unvalidateMedicationAdministrationController };
