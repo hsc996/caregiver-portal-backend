@@ -1,6 +1,6 @@
 const { UserModel } = require('../models/userModel');
 const crypto = require("crypto");
-const {
+const { 
     generateJWT,
     comparePassword,
     generateRefreshToken,
@@ -9,19 +9,12 @@ const {
 const { AppError } = require('../functions/helperFunctions');
 const { sendPasswordResetEmail } = require('./emailService');
 
-const PASSWORD_REGEX = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
-
-function hashToken(token) {
-    return crypto.createHash('sha256').update(token).digest('hex');
-}
-
 
 async function registerUserService({ firstName, lastName, username, email, password}){
     if (!firstName || !lastName || !username || !email || !password){
         throw new AppError("Missing required fields.", 400);
     }
 
-     // Check if username or email already exists
     const existingUser = await UserModel.findOne({
       $or: [{ email: email }, { username: username }],
     });
@@ -34,7 +27,6 @@ async function registerUserService({ firstName, lastName, username, email, passw
       throw new AppError(errorMessage, 409);
     }
 
-    // Create new user
     let newUser = await UserModel.create({
       firstName,
       lastName,
@@ -44,11 +36,8 @@ async function registerUserService({ firstName, lastName, username, email, passw
       role: 'User'
     });
 
-    // Generate JWT + refresh token
-    const token = generateJWT(newUser._id, newUser.username, newUser.role, newUser.firstName, newUser.lastName);
+    const token = generateJWT(newUser._id, newUser.username, newUser.role);
     const refreshToken = generateRefreshToken(newUser._id);
-
-    await UserModel.updateOne({ _id: newUser._id }, { refreshTokenHash: hashToken(refreshToken) });
 
     return { user: newUser.toSafeObject(), token, refreshToken };
 }
@@ -59,18 +48,15 @@ async function loginUserService({email, password}){
       throw new AppError("Both email and password are required.", 400);
     }
 
-    // Search for user by email
     const user = await UserModel.findOne({ email: email });
     if (!user){
       throw new AppError("Invalid email or password.", 401);
     }
 
-    // Check if user account is active
     if (!user.isActive){
       throw new AppError("This account has been deactivated.", 403);
     }
 
-    // Check if password is valid (compare passwords)
     const isPasswordValid = await comparePassword(password, user.password);
     if (!isPasswordValid) {
       throw new AppError("Invalid email or password.", 401);
@@ -81,11 +67,8 @@ async function loginUserService({email, password}){
       { $set: { lastLogin: new Date() } }
     );
 
-    // Create new JWT + refresh token
-    const token = generateJWT(user._id, user.username, user.role, user.firstName, user.lastName);
+    const token = generateJWT(user._id, user.username, user.role);
     const refreshToken = generateRefreshToken(user._id);
-
-    await UserModel.updateOne({ _id: user._id }, { refreshTokenHash: hashToken(refreshToken) });
 
     return { user: user.toSafeObject(), token, refreshToken };
 }
@@ -100,13 +83,12 @@ async function requestPasswordResetService({email}){
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
   const validEmail = emailRegex.test(email);
   if (!validEmail){
-    throw new AppError("Invalid email format.", 400);
+    throw new AppError("Invalid email format.", 401);
   }
 
   const resetToken = crypto.randomBytes(32).toString('hex');
   const hashedToken = crypto.createHash('sha256').update(resetToken).digest('hex');
 
-  // Find user, if found save hashed token + expiry to user
   const user = await UserModel.findOneAndUpdate(
     {email: email},
     {
@@ -121,7 +103,6 @@ async function requestPasswordResetService({email}){
     return { success: false, message: "If that email exists, a reset link has been sent."}
   }
 
-  // Send reset email link
   const resetUrl = `${process.env.FRONTEND_URL}/reset-password?token=${resetToken}`;
   await sendPasswordResetEmail(user.email, resetUrl);
 
@@ -135,28 +116,20 @@ async function resetPasswordService({token, newPassword}){
     throw new AppError("Reset token and new password required.", 400);
   }
 
-  if (!PASSWORD_REGEX.test(newPassword)){
-    throw new AppError(
-      "Password must be at least 8 characters and include uppercase, lowercase, a number, and a special character (@$!%*?&).",
-      400
-    );
-  }
-
   const hashedToken = crypto.createHash('sha256').update(token).digest('hex');
 
-  // Atomically claim the token — clears it in the same operation so concurrent
-  // requests with the same token can't both succeed.
-  const user = await UserModel.findOneAndUpdate(
-    { passwordResetToken: hashedToken, passwordResetExpires: { $gt: Date.now() } },
-    { $unset: { passwordResetToken: '', passwordResetExpires: '' } },
-    { new: true }
-  );
+  const user = await UserModel.findOne({
+    passwordResetToken: hashedToken,
+    passwordResetExpires: { $gt: Date.now() }
+  });
 
   if (!user){
     throw new AppError("Invalid or expired reset token.", 400);
   }
 
   user.password = newPassword;
+  user.passwordResetToken = undefined;
+  user.passwordResetExpires = undefined;
   user.lastPasswordChange = new Date();
   await user.save();
 
@@ -182,14 +155,9 @@ async function refreshTokenService({ refreshToken }){
     if (!user.isActive){
       throw new AppError("This account has been deactivated.", 403);
     }
-    if (!user.refreshTokenHash || user.refreshTokenHash !== hashToken(refreshToken)){
-      throw new AppError("Invalid or expired refresh token.", 401);
-    }
 
-    const newAccessToken = generateJWT(user._id, user.username, user.role, user.firstName, user.lastName);
+    const newAccessToken = generateJWT(user._id, user.username, user.role);
     const newRefreshToken = generateRefreshToken(user._id);
-
-    await UserModel.updateOne({ _id: user._id }, { refreshTokenHash: hashToken(newRefreshToken) });
 
     return {
       token: newAccessToken,
@@ -203,15 +171,10 @@ async function refreshTokenService({ refreshToken }){
   }
 }
 
-async function logoutService(userId) {
-    await UserModel.updateOne({ _id: userId }, { refreshTokenHash: null });
-}
-
 module.exports = {
     loginUserService,
     registerUserService,
     requestPasswordResetService,
     resetPasswordService,
-    refreshTokenService,
-    logoutService
+    refreshTokenService
 }
