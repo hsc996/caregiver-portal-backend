@@ -11,12 +11,11 @@ const allowedOrigins = [
 
 const corsOptions = {
     origin: (origin, callback) => {
-        // Allow requests with no origin (e.g. server-to-server, native mobile)
         if (!origin) return callback(null, true);
         if (allowedOrigins.includes(origin)) {
             callback(null, true);
         } else {
-            callback(new Error(`CORS policy: origin '${origin}' is not allowed`));
+            callback(null, false);
         }
     },
     methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
@@ -25,6 +24,7 @@ const corsOptions = {
     optionsSuccessStatus: 200,
 };
 
+app.options('*', cors(corsOptions));
 app.use(cors(corsOptions));
 app.use(helmet());
 
