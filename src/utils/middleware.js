@@ -88,6 +88,7 @@ function authenticateUser(req, res, next) {
       role: payload.role,
       firstName: payload.firstName ?? '',
       lastName: payload.lastName ?? '',
+      companyId: payload.companyId ?? null,
     };
 
     next();

@@ -1,1095 +1,434 @@
-# Caregiver Portal Application
+# CareSync — Backend API
 
-This application is a portal for caregivers to organize patient shifts, medications, ADLs and handover notes. The point of this application is to streamline and integrate patient data and care/medications administered to the patient in order to reduce the risk of miscommunication between caregivers and keep all relevant parties current on any changes to the patient's condition/routine.
+A multi-tenant REST API for caregiver organisations to manage patients, shifts, medications, and handover notes. Each organisation (company) is fully isolated — users only ever see data that belongs to their own company.
 
 ---
 
 ## Table of Contents
 
-1. [Database Models](#database-models)
-2. [API Endpoints](#api-endpoints)
-   - [Authentication](#authentication)
+1. [Architecture Overview](#architecture-overview)
+2. [Multi-Tenancy Model](#multi-tenancy-model)
+3. [Database Models](#database-models)
+4. [Authentication & Authorisation](#authentication--authorisation)
+5. [API Endpoints](#api-endpoints)
+   - [Auth](#auth)
+   - [Company](#company)
    - [Patients](#patients)
-   - [Medication Administration Records](#medication-administration-records-mar)
-   - [ADL Records](#adl-records)
    - [Shifts](#shifts)
    - [Handover Notes](#handover-notes)
-   - [Change Requests / Approvals](#change-requests--approvals)
-   - [User Management](#user-management)
-   - [Dashboard / Reports](#dashboard--reports)
-   - [Notifications](#notifications-optional)
-3. [Key Design Decisions](#key-design-decisions)
-4. [Data Flow Examples](#data-flow-examples)
-5. [Tech Stack](#tech-stack-considerations)
-6. [Security Considerations](#security-considerations)
+   - [Medication Administration](#medication-administration)
+   - [Users](#users)
+6. [Tech Stack](#tech-stack)
+7. [Key Design Decisions](#key-design-decisions)
+
+---
+
+## Architecture Overview
+
+```
+src/
+├── controllers/        # HTTP layer — validates input, calls services, sends response
+│   ├── AuthController.js
+│   ├── PatientController.js
+│   ├── ShiftController.js
+│   ├── HandoverController.js
+│   ├── MedicationController.js
+│   └── UserController.js
+├── services/           # Business logic — all DB access lives here
+│   ├── authService.js
+│   ├── patientService.js
+│   ├── shiftService.js
+│   ├── handoverService.js
+│   ├── medicationService.js
+│   └── userService.js
+├── models/             # Mongoose schemas
+│   ├── companyModel.js
+│   ├── userModel.js
+│   ├── patientModel.js
+│   ├── shiftModel.js
+│   ├── handoverNotesModel.js
+│   └── medicationModel.js
+├── routes/             # Express routers
+│   ├── authRoutes.js
+│   ├── companyRoutes.js
+│   ├── patientRoutes.js
+│   └── userRoutes.js
+├── utils/
+│   └── middleware.js   # authenticateUser, authorizeRoles, error handling
+└── functions/
+    └── jwtFunctions.js # JWT generation and verification
+```
+
+---
+
+## Multi-Tenancy Model
+
+Every piece of data in the system is scoped to a **Company**. This is the primary isolation boundary.
+
+```
+Company
+  └── Users          (companyId → Company)
+  └── Patients       (companyId → Company)
+       └── Shifts    (patientId → Patient)
+       └── Handover Notes
+       └── Medication Records
+```
+
+**Access rule**: a user can only read or write data where `companyId` matches their own. This is enforced at the service layer on every query — it is never the caller's responsibility.
+
+### Joining a company
+
+| Scenario | How it works |
+|---|---|
+| First user of a new organisation | Registers with a **company name** → becomes Admin, company is created, invite code generated automatically |
+| Subsequent users | Register with an **invite code** provided by their Admin → join as User role |
+
+The Admin can view and regenerate the invite code at any time via `GET /company/invite` and `POST /company/invite/regenerate`.
 
 ---
 
 ## Database Models
 
-### Model Structure
-```
-models/
-├── userModel.js                      (caregivers, family members)
-├── patientModel.js                   (patient demographics + care plan)
-├── medicationAdministrationModel.js  (legal record of meds given)
-├── adlRecordModel.js                 (daily care activities logged)
-├── shiftModel.js                     (caregiver scheduling)
-├── handoverNoteModel.js              (shift communication)
-├── changeRequestModel.js             (approval workflow)
-└── notificationModel.js              (optional - system notifications)
-```
+### Company
 
----
-
-### 1. User Model
-
-**Purpose**: Caregivers, family members, administrators
-
-**Schema**:
-```javascript
+```js
 {
-  username: String (required, unique),
-  email: String (required, unique),
-  password: String (required, hashed),
-  firstName: String,
-  lastName: String,
-  phoneNumber: String,
-  role: String (default: 'user'), // Global role, not patient-specific
-  patientIds: [ObjectId] (ref: 'Patient'),
-  isActive: Boolean (default: true),
-  passwordResetToken: String,
-  passwordResetExpires: Date,
-  lastPasswordChange: Date,
-  deletedAt: Date,
-  createdAt: Date (auto),
-  updatedAt: Date (auto)
+  name:       String (required),
+  createdBy:  ObjectId → User,
+  inviteCode: String (unique, auto-generated 12-char hex),
+  isActive:   Boolean,
+  createdAt, updatedAt
 }
 ```
 
-**Indexes**:
-- `email: 1` (unique)
-- `username: 1` (unique)
-
 ---
 
-### 2. Patient Model
+### User
 
-**Purpose**: Patient demographics and care plan (reference data - what SHOULD happen)
-
-**Schema**:
-```javascript
+```js
 {
-  firstName: String (required),
-  lastName: String (required),
-  profileImg: String (URL),
-  dateOfBirth: Date (required),
-  
-  allergies: [String],
-  alerts: [String],
-  
-  emergencyContacts: [{
-    firstName: String (required),
-    lastName: String (required),
-    relationship: String (required),
-    phoneNumber: String (required),
-    email: String,
-    userId: ObjectId (ref: 'User'), // Optional - if they're also a user
-    isPrimary: Boolean (default: false)
-  }],
-  
-  medicationSchedule: [{
-    name: String (required),
-    dosage: String (required),
-    frequency: String (required),
-    scheduledTimes: [String], // ["08:00", "20:00"]
-    route: String (required), // "Oral", "Topical", "Injection"
-    prescribedBy: String,
-    startDate: Date (required),
-    endDate: Date, // null for ongoing
-    isActive: Boolean (default: true)
-  }],
-  
-  careTaskSchedule: [{
-    task: String (required),
-    frequency: String (required),
-    category: String, // "personal-care", "mobility", "medication", "nutrition", "safety", "other"
-    instructions: String
-  }],
-  
-  caregivers: [{
-    userId: ObjectId (ref: 'User', required),
-    role: String (enum: ['admin', 'viewer'], default: 'viewer'),
-    addedAt: Date (default: Date.now)
-  }],
-  
-  isActive: Boolean (default: true),
-  deletedAt: Date,
-  createdAt: Date (auto),
-  updatedAt: Date (auto)
+  companyId:   ObjectId → Company (required),
+  firstName:   String (required),
+  lastName:    String (required),
+  username:    String (required, unique),
+  email:       String (required, unique),
+  password:    String (bcrypt hashed),
+  role:        'Admin' | 'User',
+  profileImg:  String,
+  isActive:    Boolean,
+  lastLogin:   Date,
+  deletedAt:   Date,
+  createdAt, updatedAt
 }
 ```
 
-**Virtuals**:
-- `fullName`: `${firstName} ${lastName}`
-- `age`: Calculated from dateOfBirth
-
-**Indexes**:
-- `caregivers.userId: 1, isActive: 1` (compound)
-- `firstName: 1, lastName: 1`
+**Indexes**: `{ companyId, isActive, deletedAt }`, `username`, `email`
 
 ---
 
-### 3. MedicationAdministration Model
+### Patient
 
-**Purpose**: Legal record of medications actually given (WHO gave WHAT WHEN)
-
-**Schema**:
-```javascript
+```js
 {
-  patientId: ObjectId (ref: 'Patient', required),
-  medicationName: String (required),
-  dosage: String (required),
-  route: String (required), // "Oral", "Topical", "Injection", "Sublingual"
-  scheduledTime: String (required), // "08:00"
-  actualAdministrationTime: Date (required, default: Date.now),
-  administeredBy: ObjectId (ref: 'User', required),
-  status: String (enum: ['given', 'refused', 'missed', 'held'], required),
-  refusalReason: String,
-  notes: String,
-  witnessedBy: ObjectId (ref: 'User'), // For controlled substances
-  createdAt: Date (auto),
-  updatedAt: Date (auto)
+  companyId:           ObjectId → Company (required),
+  firstName:           String (required),
+  lastName:            String (required),
+  profileImg:          String,
+  dateOfBirth:         Date (required),
+  allergies:           [String],
+  alerts:              [String],
+  emergencyContacts:   [{ firstName, lastName, relationship, phoneNumber, email }],
+  medicationSchedule:  [{ name, dosage, route, frequency, scheduledTimes, prescribedBy, startDate, endDate, isActive }],
+  careTaskSchedule:    [{ task, frequency, category, instructions }],
+  isActive:            Boolean,
+  deletedAt:           Date,
+  createdAt, updatedAt
 }
 ```
 
-**Indexes**:
-- `patientId: 1, actualAdministrationTime: -1`
-- `administeredBy: 1, actualAdministrationTime: -1`
+**Virtuals**: `fullName`, `age`
 
-**Notes**:
-- Immutable - never delete, only add corrections
-- Complete audit trail for legal compliance
+**Indexes**: `{ companyId, isActive }`, `{ companyId, lastName, firstName }`
+
+> Note: there is no per-patient caregiver list. Company membership is the access boundary — all users in a company can see all company patients. Roles (Admin / User) control what they can modify.
 
 ---
 
-### 4. ADLRecord Model
+### Shift
 
-**Purpose**: Daily activities of living and vital signs (proof of care provided)
-
-**Schema**:
-```javascript
+```js
 {
-  patientId: ObjectId (ref: 'Patient', required),
-  date: Date (required),
-  shift: String (enum: ['morning', 'afternoon', 'evening', 'night'], required),
-  
-  activities: {
-    bathing: {
-      completed: Boolean (default: false),
-      assistanceLevel: String (enum: ['independent', 'supervision', 'minimal', 'moderate', 'full']),
-      time: Date,
-      notes: String
-    },
-    dressing: {
-      completed: Boolean (default: false),
-      assistanceLevel: String (enum: ['independent', 'supervision', 'minimal', 'moderate', 'full']),
-      time: Date,
-      notes: String
-    },
-    toileting: {
-      completed: Boolean (default: false),
-      assistanceLevel: String (enum: ['independent', 'supervision', 'minimal', 'moderate', 'full']),
-      time: Date,
-      notes: String
-    },
-    eating: {
-      completed: Boolean (default: false),
-      assistanceLevel: String (enum: ['independent', 'supervision', 'minimal', 'moderate', 'full']),
-      mealType: String, // "Breakfast", "Lunch", "Dinner"
-      amountConsumed: String, // "100%", "75%", "50%", "25%"
-      time: Date,
-      notes: String
-    },
-    mobility: {
-      completed: Boolean (default: false),
-      assistanceLevel: String (enum: ['independent', 'supervision', 'minimal', 'moderate', 'full']),
-      distance: String,
-      time: Date,
-      notes: String
-    },
-    positioning: {
-      completed: Boolean (default: false),
-      time: Date,
-      notes: String
-    }
-  },
-  
-  vitalSigns: {
-    bloodPressure: {
-      systolic: Number,
-      diastolic: Number,
-      time: Date
-    },
-    heartRate: {
-      value: Number,
-      time: Date
-    },
-    temperature: {
-      value: Number,
-      unit: String (enum: ['F', 'C'], default: 'F'),
-      time: Date
-    },
-    oxygenSaturation: {
-      value: Number,
-      time: Date
-    },
-    bloodGlucose: {
-      value: Number,
-      time: Date
-    }
-  },
-  
-  generalNotes: String,
-  recordedBy: ObjectId (ref: 'User', required),
-  reviewedBy: ObjectId (ref: 'User'),
-  createdAt: Date (auto),
-  updatedAt: Date (auto)
-}
-```
-
-**Indexes**:
-- `patientId: 1, date: -1, shift: 1`
-- `recordedBy: 1, date: -1`
-
-**Notes**:
-- One record per shift per day
-- Soft delete only with reason
-
----
-
-### 5. Shift Model
-
-**Purpose**: Caregiver scheduling and attendance tracking
-
-**Schema**:
-
-```javascript
-{
-  patientId: ObjectId (ref: 'Patient', required),
-  caregiverId: ObjectId (ref: 'User', required),
-  date: Date (required),
-  shiftType: String (enum: ['morning', 'afternoon', 'evening', 'night'], required),
-  scheduledStart: String (required), // "08:00"
-  scheduledEnd: String (required), // "16:00"
-  actualClockIn: Date,
+  patientId:      ObjectId → Patient (required),
+  caregiverId:    ObjectId → User (required),
+  date:           Date (required),
+  shiftType:      'morning' | 'afternoon' | 'evening' | 'night',
+  scheduledStart: String HH:MM (required),
+  scheduledEnd:   String HH:MM (required),
+  actualClockIn:  Date,
   actualClockOut: Date,
-  status: String (enum: ['scheduled', 'in-progress', 'completed', 'cancelled', 'no-show'], default: 'scheduled'),
-  notes: String,
-  createdAt: Date (auto),
-  updatedAt: Date (auto)
+  status:         'scheduled' | 'in-progress' | 'completed' | 'cancelled' | 'no-show',
+  notes:          String,
+  createdAt, updatedAt
 }
 ```
 
-**Indexes**:
-
-- `patientId: 1, date: -1`
-- `caregiverId: 1, date: -1`
-- `patientId: 1, caregiverId: 1, date: 1` (compound for unique constraint)
+**Indexes**: `{ patientId, date }`, `{ caregiverId, date }`
 
 ---
 
-### 6. HandoverNote Model
+### HandoverNote
 
-**Purpose**: Shift communication and patient observations
-
-**Schema**:
-```javascript
+```js
 {
-  patientId: ObjectId (ref: 'Patient', required),
-  caregiverId: ObjectId (ref: 'User', required),
-  date: Date (required, default: Date.now),
-  shift: String (enum: ['morning', 'afternoon', 'evening', 'night']),
-  title: String (required, maxLength: 100),
-  content: String (required),
-  tags: [String],
-  priority: String (enum: ['low', 'normal', 'high', 'urgent'], default: 'normal'),
-  isResolved: Boolean (default: false),
-  createdAt: Date (auto),
-  updatedAt: Date (auto)
+  patientId:   ObjectId → Patient (required),
+  userId:      ObjectId → User (required),
+  title:       String (required, max 100),
+  content:     String (required),
+  tags:        [String],
+  createdAt, updatedAt
 }
 ```
 
-**Indexes**:
-- `patientId: 1, date: -1`
-- `caregiverId: 1, date: -1`
-- `patientId: 1, shift: 1, date: -1`
+**Indexes**: `{ patientId, createdAt }`, `{ userId, createdAt }`
 
 ---
 
-### 7. ChangeRequest Model
+### MedicationAdministration
 
-**Purpose**: Approval workflow for non-admin caregiver changes
-
-**Schema**:
-```javascript
+```js
 {
-  patientId: ObjectId (ref: 'Patient', required),
-  requestedBy: ObjectId (ref: 'User', required),
-  reviewedBy: ObjectId (ref: 'User'),
-  requestType: String (enum: ['patient-update', 'medication-change', 'shift-change', 'caregiver-access'], required),
-  targetId: ObjectId, // ID of the resource being changed (shift, medication, etc.)
-  originalData: Object, // Current state (optional)
-  proposedChanges: Object (required), // Requested changes
-  status: String (enum: ['pending', 'approved', 'rejected', 'withdrawn'], default: 'pending'),
-  reason: String, // Reason for request
-  rejectionReason: String, // If rejected
-  reviewedAt: Date,
-  createdAt: Date (auto),
-  updatedAt: Date (auto)
+  patientId:                ObjectId → Patient (required),
+  medicationName:           String (required),
+  dosage:                   String (required),
+  route:                    'Oral' | 'Topical' | 'Injection' | 'Sublingual' | ... (required),
+  scheduledTime:            String HH:MM (required),
+  actualAdministrationTime: Date,
+  administeredBy:           ObjectId → User (required),
+  status:                   'given' | 'refused' | 'missed' | 'held' | 'unvalidated',
+  refusalReason:            String,
+  notes:                    String,
+  witnessedBy:              ObjectId → User,
+  unvalidatedAt:            Date,
+  unvalidatedBy:            ObjectId → User,
+  unvalidationReason:       String,
+  createdAt, updatedAt
 }
 ```
 
-**Indexes**:
-- `patientId: 1, status: 1`
-- `requestedBy: 1, status: 1`
-- `patientId: 1, createdAt: -1`
+**Indexes**: `{ patientId, actualAdministrationTime }`, `{ administeredBy, actualAdministrationTime }`
 
 ---
 
-### 8. Notification Model (Optional)
+## Authentication & Authorisation
 
-**Purpose**: System notifications for users
+### JWT payload
 
-**Schema**:
-```javascript
+```json
 {
-  userId: ObjectId (ref: 'User', required),
-  patientId: ObjectId (ref: 'Patient'),
-  type: String (enum: ['change-request', 'shift-reminder', 'medication-due', 'approval-needed', 'access-granted'], required),
-  message: String (required),
-  link: String, // Deep link to relevant resource
-  isRead: Boolean (default: false),
-  createdAt: Date (auto),
-  updatedAt: Date (auto)
+  "id":        "userId",
+  "username":  "jdoe",
+  "role":      "Admin",
+  "firstName": "Jane",
+  "lastName":  "Doe",
+  "companyId": "companyId"
 }
 ```
 
-**Indexes**:
-- `userId: 1, isRead: 1, createdAt: -1`
+Access tokens expire in **15 minutes**. Refresh tokens expire in **7 days**. The `authenticateUser` middleware decodes the token and attaches `req.user` (including `companyId`) to every authenticated request.
+
+### Role authorisation
+
+| Role | Can do |
+|---|---|
+| `User` | Read all company patients/shifts/notes; record medications |
+| `Admin` | Everything a User can do, plus: update patients, view/regenerate invite code |
 
 ---
 
 ## API Endpoints
 
-### Authentication
-
-**Purpose**: User registration, login, and password management
-
-**Authorization**: Public (except refresh token)
-
-#### POST /api/auth/signup
-Register a new caregiver account
-
-**Request Body**:
-```json
-{
-  "username": "john_doe",
-  "email": "john@example.com",
-  "password": "SecurePass123!",
-  "firstName": "John",
-  "lastName": "Doe",
-  "phoneNumber": "555-0123"
-}
-```
-
-**Response** (201):
-```json
-{
-  "success": true,
-  "message": "User created successfully",
-  "user": {
-    "_id": "507f1f77bcf86cd799439011",
-    "username": "john_doe",
-    "email": "john@example.com",
-    "firstName": "John",
-    "lastName": "Doe"
-  },
-  "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
-}
-```
-
-**Status**: ✅ TESTED
+All endpoints (except public auth routes) require `Authorization: Bearer <token>`.
 
 ---
 
-#### POST /api/auth/signin
-Login with email and password
+### Auth
 
-**Request Body**:
+| Method | Path | Auth | Description |
+|---|---|---|---|
+| POST | `/auth/signup` | Public | Register — creates a company (with `companyName`) or joins one (with `inviteCode`) |
+| POST | `/auth/signin` | Public | Login |
+| POST | `/auth/refresh` | Public | Refresh access token |
+| POST | `/auth/logout` | Bearer | Invalidate refresh token |
+| POST | `/auth/forgot-password` | Public | Send password reset email |
+| POST | `/auth/reset-password` | Public | Reset password via token |
+
+#### POST /auth/signup — create a new company
 ```json
 {
-  "email": "john@example.com",
-  "password": "SecurePass123!"
+  "firstName":   "Jane",
+  "lastName":    "Doe",
+  "username":    "jdoe",
+  "email":       "jane@sunrise.care",
+  "password":    "SecurePass123!",
+  "companyName": "Sunrise Care"
 }
 ```
 
-**Response** (200):
+#### POST /auth/signup — join an existing company
+```json
+{
+  "firstName":  "Alex",
+  "lastName":   "Smith",
+  "username":   "asmith",
+  "email":      "alex@sunrise.care",
+  "password":   "SecurePass123!",
+  "inviteCode": "a1b2c3d4e5f6"
+}
+```
+
+**Response** (both, 201):
 ```json
 {
   "success": true,
-  "message": "User signed in successfully",
-  "user": {
-    "_id": "507f1f77bcf86cd799439011",
-    "username": "john_doe",
-    "email": "john@example.com",
-    "firstName": "John",
-    "lastName": "Doe"
-  },
-  "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+  "message": "User created successfully.",
+  "user": { "_id": "...", "firstName": "Jane", "lastName": "Doe", "role": "Admin", "companyId": "..." },
+  "token": "<access_token>",
+  "refreshToken": "<refresh_token>"
 }
 ```
-
-**Status**: ✅ TESTED
 
 ---
 
-#### POST /api/auth/refresh
-Refresh access token using refresh token
+### Company
 
-**Request Body**:
-```json
-{
-  "refreshToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
-}
-```
+| Method | Path | Auth | Description |
+|---|---|---|---|
+| GET | `/company/invite` | Bearer + Admin | Get current company name and invite code |
+| POST | `/company/invite/regenerate` | Bearer + Admin | Rotate the invite code (invalidates previous) |
 
-**Response** (200):
+**GET /company/invite response**:
 ```json
 {
   "success": true,
-  "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
-  "refreshToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+  "data": { "name": "Sunrise Care", "inviteCode": "a1b2c3d4e5f6" }
 }
 ```
-
-**Status**: ✅ TESTED
-
----
-
-#### POST /api/auth/forgot-password
-Request password reset email
-
-**Request Body**:
-```json
-{
-  "email": "john@example.com"
-}
-```
-
-**Response** (200):
-```json
-{
-  "success": true,
-  "message": "An email reset link has been sent."
-}
-```
-
-**Notes**:
-- Always returns success for security (doesn't reveal if email exists)
-- Sends reset token via email
-- Token expires in 1 hour
-
-**Status**: ✅ TESTED IN DEV MODE - NEEDS TO SEND EMAIL + RETEST
-
----
-
-#### POST /api/auth/reset-password
-Reset password using token from email
-
-**Request Body**:
-```json
-{
-  "token": "abc123def456ghi789jkl012mno345pqr678stu901vwx234yz",
-  "newPassword": "NewSecurePass123!"
-}
-```
-
-**Response** (200):
-```json
-{
-  "success": true,
-  "message": "Password successfully reset."
-}
-```
-
-**Status**: ✅ TESTED
 
 ---
 
 ### Patients
 
-**Purpose**: Manage patient profiles and caregiver access
+All patient endpoints are scoped automatically to `req.user.companyId`.
 
-**Authorization**: 
-- Create: Any authenticated user
-- Read: Caregivers assigned to patient
-- Update: Admin only (or via approved change request)
-- Delete: Admin only
+| Method | Path | Auth | Description |
+|---|---|---|---|
+| GET | `/patient` | Bearer | List all active patients for this company |
+| GET | `/patient/:id` | Bearer | Get a single patient |
+| PATCH | `/patient/:id` | Bearer + Admin | Update patient fields |
+| PATCH | `/patient/:id/profile-image` | Bearer + Admin | Upload profile photo |
+| GET | `/patient/:id/shifts` | Bearer | Get shifts grouped by date for a given month |
+| GET | `/patient/:id/handover-notes` | Bearer | Get handover notes for a date |
+| POST | `/patient/:id/medication-administrations` | Bearer | Record a medication administration |
+| GET | `/patient/:id/medication-administrations` | Bearer | Get medication records for a date |
+| PATCH | `/patient/:patientId/medication-administrations/:recordId/unvalidate` | Bearer | Unvalidate a record |
 
----
+#### GET /patient?  →  GET /patient
 
-#### GET /api/patients
-Get all patients the current user has access to
+Returns all active patients for the authenticated user's company, sorted by last name.
 
-**Authorization**: Authenticated user
+#### GET /patient/:id/shifts?month=YYYY-MM
 
-**Query Parameters**:
-- `page` (optional): Page number (default: 1)
-- `limit` (optional): Results per page (default: 10)
-- `search` (optional): Search by patient name
-
-**Response** (200):
+Returns shifts grouped by date key (`YYYY-MM-DD`):
 ```json
 {
   "success": true,
   "data": {
-    "patients": [
-      {
-        "_id": "507f1f77bcf86cd799439011",
-        "firstName": "Margaret",
-        "lastName": "Johnson",
-        "fullName": "Margaret Johnson",
-        "age": 79,
-        "profileImg": null,
-        "dateOfBirth": "1945-03-15T00:00:00.000Z",
-        "allergies": ["Penicillin", "Shellfish"],
-        "alerts": ["Fall risk", "Requires assistance with medication"],
-        "caregivers": [
-          {
-            "userId": {
-              "_id": "507f191e810c19729de860ea",
-              "firstName": "John",
-              "lastName": "Doe"
-            },
-            "role": "admin",
-            "addedAt": "2024-01-15T08:00:00.000Z"
-          }
-        ],
-        "createdAt": "2024-01-15T08:00:00.000Z",
-        "updatedAt": "2024-01-15T08:00:00.000Z"
-      }
-    ],
-    "total": 5,
-    "page": 1,
-    "limit": 10,
-    "totalPages": 1
-  }
-}
-```
-
-**Status**: PENDING
-
----
-
-#### GET /api/patients/:id
-Get detailed patient information
-
-**Authorization**: Caregiver assigned to patient
-
-**URL Parameters**:
-- `id`: Patient ID
-
-**Response** (200):
-```json
-{
-  "success": true,
-  "data": {
-    "_id": "507f1f77bcf86cd799439011",
-    "firstName": "Margaret",
-    "lastName": "Johnson",
-    "fullName": "Margaret Johnson",
-    "age": 79,
-    "profileImg": null,
-    "dateOfBirth": "1945-03-15T00:00:00.000Z",
-    "allergies": ["Penicillin", "Shellfish"],
-    "alerts": ["Fall risk", "Requires assistance with medication"],
-    "emergencyContacts": [
-      {
-        "firstName": "Sarah",
-        "lastName": "Johnson",
-        "relationship": "Daughter",
-        "phoneNumber": "555-0101",
-        "email": "sarah.johnson@example.com",
-        "isPrimary": true
-      }
-    ],
-    "medicationSchedule": [
-      {
-        "_id": "507f1f77bcf86cd799439012",
-        "name": "Lisinopril",
-        "dosage": "10mg",
-        "frequency": "Once daily",
-        "scheduledTimes": ["08:00"],
-        "route": "Oral",
-        "prescribedBy": "Dr. Sarah Mitchell",
-        "startDate": "2024-01-15T00:00:00.000Z",
-        "endDate": null,
-        "isActive": true
-      }
-    ],
-    "careTaskSchedule": [
-      {
-        "_id": "507f1f77bcf86cd799439013",
-        "task": "Blood pressure check",
-        "frequency": "Twice daily",
-        "category": "medication",
-        "instructions": "Check before morning and evening medications"
-      }
-    ],
-    "caregivers": [
-      {
-        "userId": {
-          "_id": "507f191e810c19729de860ea",
-          "firstName": "John",
-          "lastName": "Doe",
-          "email": "john@example.com"
-        },
-        "role": "admin",
-        "addedAt": "2024-01-15T08:00:00.000Z"
-      }
-    ],
-    "createdAt": "2024-01-15T08:00:00.000Z",
-    "updatedAt": "2024-01-15T08:00:00.000Z"
-  }
-}
-```
-
-**Status**: PENDING
-
----
-
-#### POST /api/patients
-Create a new patient profile (creator becomes admin)
-
-**Authorization**: Authenticated user
-
-**Request Body**:
-```json
-{
-  "firstName": "Margaret",
-  "lastName": "Johnson",
-  "dateOfBirth": "1945-03-15",
-  "profileImg": null,
-  "allergies": ["Penicillin", "Shellfish"],
-  "alerts": ["Fall risk", "Requires assistance with medication"],
-  "emergencyContacts": [
-    {
-      "firstName": "Sarah",
-      "lastName": "Johnson",
-      "relationship": "Daughter",
-      "phoneNumber": "555-0101",
-      "email": "sarah.johnson@example.com",
-      "isPrimary": true
-    }
-  ],
-  "medicationSchedule": [
-    {
-      "name": "Lisinopril",
-      "dosage": "10mg",
-      "frequency": "Once daily",
-      "scheduledTimes": ["08:00"],
-      "route": "Oral",
-      "prescribedBy": "Dr. Sarah Mitchell",
-      "startDate": "2024-01-15",
-      "isActive": true
-    }
-  ],
-  "careTaskSchedule": [
-    {
-      "task": "Blood pressure check",
-      "frequency": "Twice daily",
-      "category": "medication",
-      "instructions": "Check before morning and evening medications"
-    }
-  ]
-}
-```
-
-**Response** (201):
-```json
-{
-  "success": true,
-  "message": "Patient created successfully",
-  "data": {
-    "_id": "507f1f77bcf86cd799439011",
-    "firstName": "Margaret",
-    "lastName": "Johnson",
-    "fullName": "Margaret Johnson",
-    "age": 79,
-    "caregivers": [
-      {
-        "userId": "507f191e810c19729de860ea",
-        "role": "admin",
-        "addedAt": "2024-10-25T10:00:00.000Z"
-      }
-    ],
-    "createdAt": "2024-10-25T10:00:00.000Z",
-    "updatedAt": "2024-10-25T10:00:00.000Z"
-  }
-}
-```
-
-**Notes**:
-- Creator is automatically added as admin caregiver
-- Creator's patientIds array is updated
-
-**Status**: PENDING
-
----
-
-#### PUT /api/patients/:id
-Update patient information (admin only)
-
-**Authorization**: Admin caregiver for this patient
-
-**URL Parameters**:
-- `id`: Patient ID
-
-**Request Body** (partial update):
-```json
-{
-  "allergies": ["Penicillin", "Shellfish", "Latex"],
-  "alerts": ["Fall risk", "Requires assistance with medication", "New alert"]
-}
-```
-
-**Response** (200):
-```json
-{
-  "success": true,
-  "message": "Patient updated successfully",
-  "data": {
-    "_id": "507f1f77bcf86cd799439011",
-    "firstName": "Margaret",
-    "lastName": "Johnson",
-    "allergies": ["Penicillin", "Shellfish", "Latex"],
-    "alerts": ["Fall risk", "Requires assistance with medication", "New alert"],
-    "updatedAt": "2024-10-25T10:30:00.000Z"
-  }
-}
-```
-
-**Notes**:
-- If requester is not admin, creates a ChangeRequest instead
-- Cannot update caregivers array (use dedicated endpoints)
-
-**Status**: PENDING
-
----
-
-#### DELETE /api/patients/:id
-Soft delete patient profile (admin only)
-
-**Authorization**: Admin caregiver for this patient
-
-**URL Parameters**:
-- `id`: Patient ID
-
-**Response** (200):
-```json
-{
-  "success": true,
-  "message": "Patient deactivated successfully",
-  "data": {
-    "_id": "507f1f77bcf86cd799439011",
-    "isActive": false,
-    "deletedAt": "2024-10-25T10:45:00.000Z"
-  }
-}
-```
-
-**Notes**:
-- Soft delete only (sets isActive: false)
-- Related records remain intact for legal compliance
-
-**Status**: PENDING
-
----
-
-#### GET /api/patients/:id/caregivers
-List all caregivers with access to this patient
-
-**Authorization**: Caregiver assigned to patient
-
-**URL Parameters**:
-- `id`: Patient ID
-
-**Response** (200):
-```json
-{
-  "success": true,
-  "data": {
-    "caregivers": [
-      {
-        "userId": {
-          "_id": "507f191e810c19729de860ea",
-          "firstName": "John",
-          "lastName": "Doe",
-          "email": "john@example.com",
-          "phoneNumber": "555-0123"
-        },
-        "role": "admin",
-        "addedAt": "2024-01-15T08:00:00.000Z"
-      },
-      {
-        "userId": {
-          "_id": "507f191e810c19729de860eb",
-          "firstName": "Jane",
-          "lastName": "Smith",
-          "email": "jane@example.com",
-          "phoneNumber": "555-0124"
-        },
-        "role": "viewer",
-        "addedAt": "2024-02-20T14:30:00.000Z"
-      }
+    "2026-06-03": [
+      { "id": "...", "caregiver": "Jane Doe", "time": "8:00 AM – 4:00 PM", "type": "Morning Care", "status": "completed" }
     ]
   }
 }
 ```
 
-**Status**: PENDING
+---
+
+### Shifts
+
+Shift creation and management is handled via seed scripts or a future admin interface. Querying is via `/patient/:id/shifts`.
 
 ---
 
-#### POST /api/patients/:id/caregivers
-Invite/add a caregiver to patient (admin only)
+### Handover Notes
 
-**Authorization**: Admin caregiver for this patient
-
-**URL Parameters**:
-- `id`: Patient ID
-
-**Request Body**:
-```json
-{
-  "userId": "507f191e810c19729de860eb",
-  "role": "viewer"
-}
-```
-
-**Alternative** (invite by email):
-```json
-{
-  "email": "jane@example.com",
-  "role": "viewer"
-}
-```
-
-**Response** (201):
-```json
-{
-  "success": true,
-  "message": "Caregiver added successfully",
-  "data": {
-    "userId": "507f191e810c19729de860eb",
-    "role": "viewer",
-    "addedAt": "2024-10-25T11:00:00.000Z"
-  }
-}
-```
-
-**Notes**:
-- If user doesn't exist, may send invitation email
-- Updates user's patientIds array
-- Creates notification for invited user
-
-**Status**: PENDING
+| Method | Path | Auth | Description |
+|---|---|---|---|
+| GET | `/patient/:id/handover-notes?date=YYYY-MM-DD` | Bearer | Notes for a specific date |
 
 ---
 
-#### PUT /api/patients/:id/caregivers/:userId
-Update caregiver role (admin only)
+### Medication Administration
 
-**Authorization**: Admin caregiver for this patient
+| Method | Path | Auth | Description |
+|---|---|---|---|
+| POST | `/patient/:id/medication-administrations` | Bearer | Record administration |
+| GET | `/patient/:id/medication-administrations?date=YYYY-MM-DD` | Bearer | Records for a date |
+| PATCH | `/patient/:patientId/medication-administrations/:recordId/unvalidate` | Bearer | Unvalidate with reason |
 
-**URL Parameters**:
-- `id`: Patient ID
-- `userId`: User ID of caregiver to update
-
-**Request Body**:
+#### POST /patient/:id/medication-administrations
 ```json
 {
-  "role": "admin"
-}
-```
-
-**Response** (200):
-```json
-{
-  "success": true,
-  "message": "Caregiver role updated successfully",
-  "data": {
-    "userId": "507f191e810c19729de860eb",
-    "role": "admin",
-    "addedAt": "2024-02-20T14:30:00.000Z"
-  }
-}
-```
-
-**Notes**:
-- Cannot change own role if you're the only admin
-- Must have at least one admin
-
-**Status**: PENDING
-
----
-
-#### DELETE /api/patients/:id/caregivers/:userId
-Remove caregiver access (admin only)
-
-**Authorization**: Admin caregiver for this patient
-
-**URL Parameters**:
-- `id`: Patient ID
-- `userId`: User ID of caregiver to remove
-
-**Response** (200):
-```json
-{
-  "success": true,
-  "message": "Caregiver access removed successfully"
-}
-```
-
-**Notes**:
-- Cannot remove yourself if you're the only admin
-- Removes patient from user's patientIds array
-- User loses access to all patient data
-
-**Status**: PENDING
-
----
-
-### Medication Administration Records (MAR)
-
-**Purpose**: Manage medication schedules and log actual administrations
-
-**Authorization**:
-- Read: All caregivers assigned to patient
-- Create log: All caregivers
-- Update schedule: Admin only
-
----
-
-#### GET /api/patients/:patientId/medications
-Get medication schedule for patient
-
-**Authorization**: Caregiver assigned to patient
-
-**URL Parameters**:
-- `patientId`: Patient ID
-
-**Query Parameters**:
-- `activeOnly` (optional): Boolean (default: true)
-
-**Response** (200):
-```json
-{
-  "success": true,
-  "data": {
-    "medications": [
-      {
-        "_id": "507f1f77bcf86cd799439012",
-        "name": "Lisinopril",
-        "dosage": "10mg",
-        "frequency": "Once daily",
-        "scheduledTimes": ["08:00"],
-        "route": "Oral",
-        "prescribedBy": "Dr. Sarah Mitchell",
-        "startDate": "2024-01-15T00:00:00.000Z",
-        "endDate": null,
-        "isActive": true
-      }
-    ]
-  }
-}
-```
-
-**Status**: PENDING
-
----
-
-#### POST /api/patients/:patientId/medications
-Add medication to schedule (admin only)
-
-**Authorization**: Admin caregiver for this patient
-
-**URL Parameters**:
-- `patientId`: Patient ID
-
-**Request Body**:
-```json
-{
-  "name": "Metformin",
-  "dosage": "500mg",
-  "frequency": "Twice daily",
-  "scheduledTimes": ["08:00", "18:00"],
+  "medicationName": "Lisinopril",
+  "dosage": "10mg",
   "route": "Oral",
-  "prescribedBy": "Dr. James Park",
-  "startDate": "2024-10-25",
-  "isActive": true
+  "scheduledTime": "08:00"
 }
 ```
-
-**Response** (201):
-```json
-{
-  "success": true,
-  "message": "Medication added to schedule",
-  "data": {
-    "_id": "507f1f77bcf86cd799439015",
-    "name": "Metformin",
-    "dosage": "500mg",
-    "frequency": "Twice daily",
-    "scheduledTimes": ["08:00", "18:00"],
-    "route": "Oral",
-    "prescribedBy": "Dr. James Park",
-    "startDate": "2024-10-25T00:00:00.000Z",
-    "endDate": null,
-    "isActive": true
-  }
-}
-```
-
-**Notes**:
-- If requester is not admin, creates ChangeRequest instead
-
-**Status**: PENDING
 
 ---
 
-#### PUT /api/patients/:patientId/medications/:id
-Update medication in schedule (admin only)
+### Users
 
-**Authorization**: Admin caregiver for this patient
+| Method | Path | Auth | Description |
+|---|---|---|---|
+| GET | `/user/fetchallusers` | Bearer | List all active users in this company |
+| PUT | `/user/:id` | Bearer (owner or Admin) | Update user details |
+| DELETE | `/user/:id` | Bearer (owner or Admin) | Soft delete user |
+| PATCH | `/user/:id/profile-image` | Bearer (owner or Admin) | Upload profile photo |
 
-**URL Parameters**:
-- `patientId`: Patient ID
-- `id`: Medication ID
+---
 
-**Request Body** (partial update):
-```json
-{
-  "dosage": "1000mg",
-  "scheduledTimes": ["08:00", "20:00"]
-}
-```
+## Tech Stack
 
-**Response** (200):
-```json
-{
-  "success": true,
-  "message": "Medication updated",
-  "data": {
-    "_id": "507
+| Layer | Technology |
+|---|---|
+| Runtime | Node.js |
+| Framework | Express.js |
+| Database | MongoDB (Mongoose ODM) |
+| Auth | JWT (access token 15m, refresh token 7d) |
+| Password hashing | bcrypt (12 rounds) |
+| File uploads | Cloudinary (via multer) |
+| Email | Nodemailer |
+| API docs | Swagger / OpenAPI (`/api-docs`) |
+| Security | Helmet, express-rate-limit, CORS allowlist |
+
+---
+
+## Key Design Decisions
+
+### Company as the isolation boundary
+Rather than per-patient caregiver assignment lists, access is controlled at the company level. Any user in a company can see all company patients. This reduces admin overhead and is appropriate for small-to-medium care organisations where all staff work across all patients.
+
+### Invite code onboarding
+New companies are created during registration (first user becomes Admin). Subsequent users join via a 12-character hex invite code that the Admin can rotate at any time. This keeps onboarding simple without requiring an email-invite flow.
+
+### companyId in the JWT
+The `companyId` is embedded in the JWT payload so every authenticated request knows its tenant without an additional DB lookup. The service layer uses this to scope all queries — callers never need to remember to filter by company.
+
+### Medication records are append-only
+Administration records are never deleted, only unvalidated (status change + reason). This preserves a full audit trail for legal and compliance purposes.
+
+### Soft deletes throughout
+Users and patients use `isActive: false` + `deletedAt` rather than hard deletes, so historical records remain intact.
+
+### Services own all DB access
+Controllers handle HTTP concerns only (parsing, responding). All MongoDB queries live in services. This keeps the layer boundary clean and makes the business logic testable in isolation.

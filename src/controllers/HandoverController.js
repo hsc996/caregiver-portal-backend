@@ -1,6 +1,6 @@
 const { GetHandoverNotesByDate } = require('../services/handoverService');
 const { AppError } = require('../functions/helperFunctions');
-const { requireCaregiverAccess } = require('../services/patientService');
+const { requireCompanyPatient } = require('../services/patientService');
 
 async function getHandoverNotesController(req, res, next) {
     try {
@@ -17,7 +17,7 @@ async function getHandoverNotesController(req, res, next) {
             throw new AppError('Invalid date value.', 400);
         }
 
-        await requireCaregiverAccess(id, req.user.id, req.user.role);
+        await requireCompanyPatient(id, req.user.companyId);
 
         const notes = await GetHandoverNotesByDate(id, date);
         res.status(200).json({ success: true, data: notes });

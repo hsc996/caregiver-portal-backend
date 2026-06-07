@@ -1,12 +1,15 @@
 const { MedicationModel } = require("../../models/medicationModel");
 const { AppError } = require("../../functions/helperFunctions");
 
-async function seedMedications(caregiverIds, patientIds) {
+async function seedMedications(caregiverIds, patientIds, companyId) {
     if (!caregiverIds || caregiverIds.length === 0) {
         throw new AppError("No caregiver IDs provided", 400);
     }
     if (!patientIds || patientIds.length === 0) {
         throw new AppError("No patient IDs provided", 400);
+    }
+    if (!companyId) {
+        throw new AppError("No companyId provided", 400);
     }
 
     // Helper function to simulate dates for the past week
@@ -21,6 +24,7 @@ async function seedMedications(caregiverIds, patientIds) {
       // Margaret Johnson - Patient 0 (Blood Pressure Meds)
       // Today - Morning
       {
+        companyId,
         patientId: patientIds[0],
         medicationName: "Lisinopril",
         dosage: "10mg",
@@ -33,6 +37,7 @@ async function seedMedications(caregiverIds, patientIds) {
           "Patient took medication with breakfast. No adverse effects noted.",
       },
       {
+        companyId,
         patientId: patientIds[0],
         medicationName: "Aspirin",
         dosage: "81mg",
@@ -44,6 +49,7 @@ async function seedMedications(caregiverIds, patientIds) {
         notes: "Given with food as directed.",
       },
       {
+        companyId,
         patientId: patientIds[0],
         medicationName: "Vitamin D",
         dosage: "2000 IU",
@@ -56,6 +62,7 @@ async function seedMedications(caregiverIds, patientIds) {
 
       // Yesterday - Morning
       {
+        companyId,
         patientId: patientIds[0],
         medicationName: "Lisinopril",
         dosage: "10mg",
@@ -67,6 +74,7 @@ async function seedMedications(caregiverIds, patientIds) {
         notes: "BP before medication: 138/82",
       },
       {
+        companyId,
         patientId: patientIds[0],
         medicationName: "Aspirin",
         dosage: "81mg",
@@ -80,6 +88,7 @@ async function seedMedications(caregiverIds, patientIds) {
       // Robert Chen - Patient 1 (Diabetes Medications)
       // Today - Morning
       {
+        companyId,
         patientId: patientIds[1],
         medicationName: "Metformin",
         dosage: "500mg",
@@ -91,6 +100,7 @@ async function seedMedications(caregiverIds, patientIds) {
         notes: "Blood glucose before: 142 mg/dL. Given with breakfast.",
       },
       {
+        companyId,
         patientId: patientIds[1],
         medicationName: "Atorvastatin",
         dosage: "20mg",
@@ -104,6 +114,7 @@ async function seedMedications(caregiverIds, patientIds) {
 
       // Today - Evening Insulin
       {
+        companyId,
         patientId: patientIds[1],
         medicationName: "Insulin (Lantus)",
         dosage: "20 units",
@@ -118,6 +129,7 @@ async function seedMedications(caregiverIds, patientIds) {
 
       // Yesterday - Refused dose
       {
+        companyId,
         patientId: patientIds[1],
         medicationName: "Metformin",
         dosage: "500mg",
@@ -133,6 +145,7 @@ async function seedMedications(caregiverIds, patientIds) {
       // Dorothy Williams - Patient 2 (Dementia Medications)
       // Today - Morning
       {
+        companyId,
         patientId: patientIds[2],
         medicationName: "Memantine",
         dosage: "10mg",
@@ -146,6 +159,7 @@ async function seedMedications(caregiverIds, patientIds) {
 
       // Today - Evening
       {
+        companyId,
         patientId: patientIds[2],
         medicationName: "Donepezil",
         dosage: "10mg",
@@ -157,6 +171,7 @@ async function seedMedications(caregiverIds, patientIds) {
         notes: "Given with dinner.",
       },
       {
+        companyId,
         patientId: patientIds[2],
         medicationName: "Memantine",
         dosage: "10mg",
@@ -167,6 +182,7 @@ async function seedMedications(caregiverIds, patientIds) {
         status: "given",
       },
       {
+        companyId,
         patientId: patientIds[2],
         medicationName: "Melatonin",
         dosage: "3mg",
@@ -180,6 +196,7 @@ async function seedMedications(caregiverIds, patientIds) {
 
       // 2 days ago - Missed dose
       {
+        companyId,
         patientId: patientIds[2],
         medicationName: "Melatonin",
         dosage: "3mg",
@@ -195,6 +212,7 @@ async function seedMedications(caregiverIds, patientIds) {
       // Harold Martinez - Patient 3 (Anticoagulant)
       // Today - Evening
       {
+        companyId,
         patientId: patientIds[3],
         medicationName: "Warfarin",
         dosage: "5mg",
@@ -207,6 +225,7 @@ async function seedMedications(caregiverIds, patientIds) {
           "Given at same time daily for consistency. Patient tolerating well.",
       },
       {
+        companyId,
         patientId: patientIds[3],
         medicationName: "Multivitamin",
         dosage: "1 tablet",
@@ -220,6 +239,7 @@ async function seedMedications(caregiverIds, patientIds) {
 
       // Yesterday
       {
+        companyId,
         patientId: patientIds[3],
         medicationName: "Warfarin",
         dosage: "5mg",
@@ -234,6 +254,7 @@ async function seedMedications(caregiverIds, patientIds) {
       // Eleanor Thompson - Patient 4 (Cardiac Medications)
       // Today - Morning
       {
+        companyId,
         patientId: patientIds[4],
         medicationName: "Furosemide",
         dosage: "40mg",
@@ -246,6 +267,7 @@ async function seedMedications(caregiverIds, patientIds) {
           "Given early morning to avoid nighttime urination. BP: 128/76, HR: 74",
       },
       {
+        companyId,
         patientId: patientIds[4],
         medicationName: "Carvedilol",
         dosage: "25mg",
@@ -257,6 +279,7 @@ async function seedMedications(caregiverIds, patientIds) {
         notes: "Vital signs stable before administration.",
       },
       {
+        companyId,
         patientId: patientIds[4],
         medicationName: "Digoxin",
         dosage: "0.125mg",
@@ -270,6 +293,7 @@ async function seedMedications(caregiverIds, patientIds) {
 
       // Today - Evening
       {
+        companyId,
         patientId: patientIds[4],
         medicationName: "Carvedilol",
         dosage: "25mg",
@@ -283,6 +307,7 @@ async function seedMedications(caregiverIds, patientIds) {
 
       // Yesterday - PRN medication
       {
+        companyId,
         patientId: patientIds[4],
         medicationName: "Nitroglycerin",
         dosage: "0.4mg",
@@ -298,6 +323,7 @@ async function seedMedications(caregiverIds, patientIds) {
 
       // 3 days ago - Held medication
       {
+        companyId,
         patientId: patientIds[4],
         medicationName: "Furosemide",
         dosage: "40mg",
@@ -313,6 +339,7 @@ async function seedMedications(caregiverIds, patientIds) {
       // Additional historical records for past week
       // Margaret - 3 days ago
       {
+        companyId,
         patientId: patientIds[0],
         medicationName: "Lisinopril",
         dosage: "10mg",
@@ -325,6 +352,7 @@ async function seedMedications(caregiverIds, patientIds) {
 
       // Robert - 2 days ago
       {
+        companyId,
         patientId: patientIds[1],
         medicationName: "Insulin (Lantus)",
         dosage: "20 units",
@@ -338,6 +366,7 @@ async function seedMedications(caregiverIds, patientIds) {
 
       // Dorothy - 4 days ago
       {
+        companyId,
         patientId: patientIds[2],
         medicationName: "Donepezil",
         dosage: "10mg",
@@ -351,6 +380,7 @@ async function seedMedications(caregiverIds, patientIds) {
 
       // Harold - 5 days ago
       {
+        companyId,
         patientId: patientIds[3],
         medicationName: "Warfarin",
         dosage: "5mg",
@@ -363,6 +393,7 @@ async function seedMedications(caregiverIds, patientIds) {
 
       // Eleanor - 6 days ago
       {
+        companyId,
         patientId: patientIds[4],
         medicationName: "Furosemide",
         dosage: "40mg",
@@ -378,6 +409,7 @@ async function seedMedications(caregiverIds, patientIds) {
 
       // Margaret Johnson - Validated in error yesterday, caught by second caregiver
       {
+        companyId,
         patientId: patientIds[0],
         medicationName: "Aspirin",
         dosage: "81mg",
@@ -394,6 +426,7 @@ async function seedMedications(caregiverIds, patientIds) {
 
       // Robert Chen - Wrong dose recorded, corrected by same caregiver
       {
+        companyId,
         patientId: patientIds[1],
         medicationName: "Metformin",
         dosage: "500mg",
@@ -409,6 +442,7 @@ async function seedMedications(caregiverIds, patientIds) {
 
       // Dorothy Williams - Documentation error, record created for wrong patient
       {
+        companyId,
         patientId: patientIds[2],
         medicationName: "Donepezil",
         dosage: "10mg",
@@ -425,6 +459,7 @@ async function seedMedications(caregiverIds, patientIds) {
 
       // Eleanor Thompson - Patient refused after record was already created
       {
+        companyId,
         patientId: patientIds[4],
         medicationName: "Carvedilol",
         dosage: "25mg",
@@ -441,6 +476,7 @@ async function seedMedications(caregiverIds, patientIds) {
 
       // Harold Martinez - Wrong time logged, entered manually
       {
+        companyId,
         patientId: patientIds[3],
         medicationName: "Warfarin",
         dosage: "5mg",

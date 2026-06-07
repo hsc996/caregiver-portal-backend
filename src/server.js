@@ -11,7 +11,6 @@ const allowedOrigins = [
 
 const corsOptions = {
     origin: (origin, callback) => {
-        console.log('[CORS] origin:', origin);
         if (!origin) return callback(null, true);
         if (allowedOrigins.includes(origin)) {
             callback(null, true);
@@ -54,6 +53,9 @@ app.use('/user', userRoutes);
 
 const patientRoutes = require('./routes/patientRoutes');
 app.use('/patient', patientRoutes);
+
+const companyRoutes = require('./routes/companyRoutes');
+app.use('/company', companyRoutes);
 
 app.use(errorHandlingMiddleware);
 

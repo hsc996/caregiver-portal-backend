@@ -1,17 +1,20 @@
 const { HandoverModel } = require("../../models/handoverNotesModel");
 const mongoose = require("mongoose");
 
-async function seedHandoverNotes(userIds, patientIds) {
+async function seedHandoverNotes(userIds, patientIds, companyId) {
   if (!userIds || userIds.length === 0) {
     throw new Error("No user ID provided.");
   }
-
   if (!patientIds || patientIds.length === 0) {
     throw new Error("No patient ID providied.");
+  }
+  if (!companyId) {
+    throw new Error("No companyId provided.");
   }
 
   const HandoverEntries = [
     {
+      companyId,
       userId:userIds[0],
       patientId:patientIds[0], // Margaret Johnson
       title: "Morning Shift - Medication Reminder",
@@ -20,6 +23,7 @@ async function seedHandoverNotes(userIds, patientIds) {
       tags: ["medication", "morning", "vital-signs"],
     },
     {
+      companyId,
       userId:userIds[0],
       patientId:patientIds[0], // Margaret Johnson
       title: "Fall Risk Assessment",
@@ -28,6 +32,7 @@ async function seedHandoverNotes(userIds, patientIds) {
       tags: ["safety", "fall-risk", "afternoon"],
     },
     {
+      companyId,
       userId:userIds[1] || userIds[0],
       patientId:patientIds[1], // Robert Chen
       title: "Blood Sugar Monitoring",
@@ -36,6 +41,7 @@ async function seedHandoverNotes(userIds, patientIds) {
       tags: ["diabetes", "medication", "lunch", "vital-signs"],
     },
     {
+      companyId,
       userId:userIds[0],
       patientId:patientIds[1], // Robert Chen
       title: "Mobility Concerns",
@@ -44,6 +50,7 @@ async function seedHandoverNotes(userIds, patientIds) {
       tags: ["mobility", "pain-management", "follow-up"],
     },
     {
+      companyId,
       userId:userIds[1] || userIds[0],
       patientId:patientIds[2], // Dorothy Williams
       title: "Evening Confusion Episode",
@@ -52,6 +59,7 @@ async function seedHandoverNotes(userIds, patientIds) {
       tags: ["dementia", "behavior", "evening", "sundowning"],
     },
     {
+      companyId,
       userId:userIds[0],
       patientId:patientIds[2], // Dorothy Williams
       title: "Wandering Prevention Update",
@@ -60,6 +68,7 @@ async function seedHandoverNotes(userIds, patientIds) {
       tags: ["wandering", "safety", "activities"],
     },
     {
+      companyId,
       userId:userIds[1] || userIds[0],
       patientId:patientIds[3], // Harold Martinez
       title: "Hearing Aid Maintenance",
@@ -68,6 +77,7 @@ async function seedHandoverNotes(userIds, patientIds) {
       tags: ["hearing-aid", "communication", "maintenance"],
     },
     {
+      companyId,
       userId:userIds[0],
       patientId:patientIds[3], // Harold Martinez
       title: "Wheelchair Positioning",
@@ -76,6 +86,7 @@ async function seedHandoverNotes(userIds, patientIds) {
       tags: ["wheelchair", "pressure-care", "comfort"],
     },
     {
+      companyId,
       userId:userIds[1] || userIds[0],
       patientId:patientIds[4], // Eleanor Thompson
       title: "Oxygen Saturation Monitoring",
@@ -84,6 +95,7 @@ async function seedHandoverNotes(userIds, patientIds) {
       tags: ["oxygen", "respiratory", "evening", "vital-signs"],
     },
     {
+      companyId,
       userId:userIds[0],
       patientId:patientIds[4], // Eleanor Thompson
       title: "Cardiac Medication Administration",
@@ -92,6 +104,7 @@ async function seedHandoverNotes(userIds, patientIds) {
       tags: ["cardiac", "medication", "mobility", "vital-signs"],
     },
     {
+      companyId,
       userId:userIds[1] || userIds[0],
       patientId:patientIds[0], // Margaret Johnson
       title: "Family Meeting Notes",
@@ -100,6 +113,7 @@ async function seedHandoverNotes(userIds, patientIds) {
       tags: ["family", "nutrition", "follow-up"],
     },
     {
+      companyId,
       userId:userIds[0],
       patientId:patientIds[2], // Dorothy Williams
       title: "Activity Participation",
@@ -108,6 +122,7 @@ async function seedHandoverNotes(userIds, patientIds) {
       tags: ["activities", "dementia", "therapy", "afternoon"],
     },
     {
+      companyId,
       userId:userIds[1] || userIds[0],
       patientId:patientIds[1], // Robert Chen
       title: "Dietary Restrictions Reminder",
@@ -116,6 +131,7 @@ async function seedHandoverNotes(userIds, patientIds) {
       tags: ["diabetes", "diet", "family"],
     },
     {
+      companyId,
       userId:userIds[0],
       patientId:patientIds[3], // Harold Martinez
       title: "Transportation Arrangement",
@@ -124,6 +140,7 @@ async function seedHandoverNotes(userIds, patientIds) {
       tags: ["appointments", "transportation", "follow-up"],
     },
     {
+      companyId,
       userId:userIds[1] || userIds[0],
       patientId:patientIds[4], // Eleanor Thompson
       title: "Night Routine Adjustment",

@@ -3,6 +3,12 @@ const mongoose = require("mongoose");
 // Administrative record of each medication administration event.
 
 const medicationSchema = new mongoose.Schema({
+    companyId: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Company',
+        required: true,
+        index: true,
+    },
     patientId: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Patient',
@@ -68,6 +74,7 @@ const medicationSchema = new mongoose.Schema({
 
 medicationSchema.index({ patientId: 1, actualAdministrationTime: -1 });
 medicationSchema.index({ administeredBy: 1, actualAdministrationTime: -1 });
+medicationSchema.index({ companyId: 1, actualAdministrationTime: -1 });
 
 const MedicationModel = mongoose.model('Medications', medicationSchema);
 

@@ -1,7 +1,6 @@
 const { UserModel } = require('../../models/userModel');
-const mongoose = require("mongoose");
 
-async function seedUsers(){
+async function seedUsers(companyId) {
     const { SEED_ADMIN_PASSWORD, SEED_USER2_PASSWORD, SEED_USER3_PASSWORD } = process.env;
 
     if (!SEED_ADMIN_PASSWORD || !SEED_USER2_PASSWORD || !SEED_USER3_PASSWORD) {
@@ -10,40 +9,42 @@ async function seedUsers(){
 
     const users = [
         {
+            companyId,
             firstName: "Hannah",
             lastName: "Scaife",
             username: "first_user",
             email: "han.scaife@gmail.com",
             password: SEED_ADMIN_PASSWORD,
-            role: "Admin"
+            role: "Admin",
         },
         {
+            companyId,
             firstName: "Sarah",
             lastName: "Jones",
             username: "second_user",
             email: "user2@gmail.com",
             password: SEED_USER2_PASSWORD,
-            role: "User"
+            role: "User",
         },
         {
+            companyId,
             firstName: "James",
             lastName: "Carter",
             username: "third_user",
             email: "user3@gmail.com",
             password: SEED_USER3_PASSWORD,
-            role: "User"
+            role: "User",
         },
-    ]
+    ];
 
     try {
         await UserModel.deleteMany();
         await UserModel.create(users);
-        console.log("Users seeded successfully.")
+        console.log("Users seeded successfully.");
     } catch (error) {
-        console.log("An error occured while seeding User data: " + error);
+        console.log("An error occurred while seeding User data: " + error);
+        throw error;
     }
 }
 
-module.exports = {
-    seedUsers
-}
+module.exports = { seedUsers };

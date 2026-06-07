@@ -44,15 +44,17 @@ const UserSchema = new mongoose.Schema({
             message: 'Password must contain at least 8 characters, including uppercase, lowercase, number, and special character'
         }
     },
+    companyId: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Company',
+        required: [true, 'Company is required'],
+        index: true,
+    },
     role: {
         type: String,
         enum: ['Admin', 'User'],
         default: 'User'
     },
-    // patientIds: [{
-    //     type: mongoose.Schema.Types.ObjectId,
-    //     ref: 'Patient'
-    // }],
     lastLogin: {
         type: Date,
         default: null
@@ -87,7 +89,7 @@ const UserSchema = new mongoose.Schema({
 }, { timestamps: true })
 
 // Compound index for common queries
-UserSchema.index({ isActive: 1, deletedAt: 1 });
+UserSchema.index({ companyId: 1, isActive: 1, deletedAt: 1 });
 
 // Auto-hash password in pre-save hook
 UserSchema.pre('save', async function(next){

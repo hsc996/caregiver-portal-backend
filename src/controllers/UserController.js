@@ -16,7 +16,7 @@ async function getAllUsersController(req, res, next){
     try {
         const { page, limit } = req.pagination;
 
-        const filter = { isActive: true };
+        const filter = { isActive: true, companyId: req.user.companyId };
         const users = await FindAllUsers(
             filter,
             { page, limit }

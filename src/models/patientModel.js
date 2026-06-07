@@ -1,23 +1,6 @@
 const mongoose = require("mongoose");
 const { emergencyContactSchema } = require('./emergencyContactSchema');
 
-const caregiverSubSchema = new mongoose.Schema({
-    userId: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'User',
-        required: true
-    },
-    role: {
-        type: String,
-        enum: ['admin', 'viewer'],
-        default: 'viewer'
-    },
-    addedAt: {
-        type: Date,
-        default: Date.now
-    }
-}, { _id: false });
-
 const medicationScheduleSubSchema = new mongoose.Schema({
     name:           { type: String, required: [true, 'Medication name is required'], trim: true },
     dosage:         { type: String, required: [true, 'Dosage is required'],          trim: true },
@@ -38,6 +21,12 @@ const careTaskSubSchema = new mongoose.Schema({
 }, { _id: false });
 
 const patientSchema = new mongoose.Schema({
+    companyId: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Company',
+        required: [true, 'Company is required'],
+        index: true,
+    },
     firstName: {
         type: String,
         required: [true, 'First name is required'],
@@ -63,16 +52,6 @@ const patientSchema = new mongoose.Schema({
         validate: {
             validator: (contacts) => contacts.length <= 2,
             message: 'Maximum of 2 emergency contacts allowed'
-        }
-    },
-    caregivers: {
-        type: [caregiverSubSchema],
-        validate: {
-            validator: function (caregivers) {
-                const ids = caregivers.map((c) => c.userId.toString());
-                return ids.length === new Set(ids).size;
-            },
-            message: 'A user can only be assigned to a patient once'
         }
     },
     medicationSchedule: [medicationScheduleSubSchema],
@@ -102,8 +81,8 @@ patientSchema.virtual('age').get(function () {
 patientSchema.set('toJSON',   { virtuals: true });
 patientSchema.set('toObject', { virtuals: true });
 
-patientSchema.index({ isActive: 1, 'caregivers.userId': 1 });
-patientSchema.index({ lastName: 1, firstName: 1 });
+patientSchema.index({ companyId: 1, isActive: 1 });
+patientSchema.index({ companyId: 1, lastName: 1, firstName: 1 });
 
 const PatientModel = mongoose.model('Patient', patientSchema);
 

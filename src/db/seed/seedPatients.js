@@ -1,13 +1,13 @@
 const { PatientModel } = require("../../models/patientModel");
-const { AppError } = (require = "../../functions/helperFunctions.js");
 
-async function seedPatients(caregiverIds) {
-  if (!caregiverIds || caregiverIds.length === 0) {
-    throw new AppError("No caregiver Id provided");
+async function seedPatients(companyId) {
+  if (!companyId) {
+    throw new Error("No companyId provided to seedPatients");
   }
 
   const patients = [
     {
+      companyId,
       firstName: "Margaret",
       lastName: "Johnson",
       profileImg: null,
@@ -95,13 +95,10 @@ async function seedPatients(caregiverIds) {
           isPrimary: false,
         },
       ],
-      caregivers: [
-        { userId: caregiverIds[0], role: "admin" },
-        { userId: caregiverIds[1], role: "viewer" },
-      ],
       isActive: true,
     },
     {
+      companyId,
       firstName: "Robert",
       lastName: "Chen",
       profileImg: null,
@@ -193,14 +190,10 @@ async function seedPatients(caregiverIds) {
           isPrimary: true,
         },
       ],
-      caregivers: [
-        { userId: caregiverIds[0], role: "admin" },
-        { userId: caregiverIds[1], role: "viewer" },
-        { userId: caregiverIds[2], role: "viewer" },
-      ],
       isActive: true,
     },
     {
+      companyId,
       firstName: "Dorothy",
       lastName: "Williams",
       profileImg: null,
@@ -288,13 +281,10 @@ async function seedPatients(caregiverIds) {
           isPrimary: false,
         },
       ],
-      caregivers: [
-        { userId: caregiverIds[0], role: "admin" },
-        { userId: caregiverIds[2], role: "viewer" },
-      ],
       isActive: true,
     },
     {
+      companyId,
       firstName: "Harold",
       lastName: "Martinez",
       profileImg: null,
@@ -363,13 +353,10 @@ async function seedPatients(caregiverIds) {
           isPrimary: true,
         },
       ],
-      caregivers: [
-        { userId: caregiverIds[0], role: "admin" },
-        { userId: caregiverIds[1], role: "viewer" },
-      ],
       isActive: true,
     },
     {
+      companyId,
       firstName: "Eleanor",
       lastName: "Thompson",
       profileImg: null,
@@ -474,11 +461,6 @@ async function seedPatients(caregiverIds) {
           email: "alice.davis@example.com",
           isPrimary: false,
         },
-      ],
-      caregivers: [
-        { userId: caregiverIds[0], role: "admin" },
-        { userId: caregiverIds[1], role: "viewer" },
-        { userId: caregiverIds[2], role: "viewer" },
       ],
       isActive: true,
     },

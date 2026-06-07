@@ -1,12 +1,15 @@
 const { ADLRecordModel } = require("../../models/adlModel");
 const { AppError } = require("../../functions/helperFunctions");
 
-async function seedADLs(caregiverIds, patientIds) {
+async function seedADLs(caregiverIds, patientIds, companyId) {
   if (!caregiverIds || caregiverIds.length === 0) {
     throw new AppError("No caregiver ID provided.", 400);
   }
   if (!patientIds || patientIds.length === 0) {
     throw new AppError("No patient ID provided.", 400);
+  }
+  if (!companyId) {
+    throw new AppError("No companyId provided.", 400);
   }
 
   const getDateDaysAgo = (days) => {
@@ -26,6 +29,7 @@ async function seedADLs(caregiverIds, patientIds) {
   const adlRecords = [
     // Margaret Johnson - Patient 0 - Today Morning Shift
     {
+      companyId,
       patientId: patientIds[0],
       date: getDateDaysAgo(0),
       shift: "morning",
@@ -92,6 +96,7 @@ async function seedADLs(caregiverIds, patientIds) {
 
     // Margaret Johnson - Today Afternoon Shift
     {
+      companyId,
       patientId: patientIds[0],
       date: getDateDaysAgo(0),
       shift: "afternoon",
@@ -134,6 +139,7 @@ async function seedADLs(caregiverIds, patientIds) {
 
     // Robert Chen - Patient 1 - Today Morning Shift
     {
+      companyId,
       patientId: patientIds[1],
       date: getDateDaysAgo(0),
       shift: "morning",
@@ -204,6 +210,7 @@ async function seedADLs(caregiverIds, patientIds) {
 
     // Robert Chen - Today Afternoon Shift
     {
+      companyId,
       patientId: patientIds[1],
       date: getDateDaysAgo(0),
       shift: "afternoon",
@@ -238,6 +245,7 @@ async function seedADLs(caregiverIds, patientIds) {
 
     // Dorothy Williams - Patient 2 - Today Morning Shift
     {
+      companyId,
       patientId: patientIds[2],
       date: getDateDaysAgo(0),
       shift: "morning",
@@ -305,6 +313,7 @@ async function seedADLs(caregiverIds, patientIds) {
 
     // Harold Martinez - Patient 3 - Today Morning Shift
     {
+      companyId,
       patientId: patientIds[3],
       date: getDateDaysAgo(0),
       shift: "morning",
@@ -371,6 +380,7 @@ async function seedADLs(caregiverIds, patientIds) {
 
     // Harold Martinez - Today Afternoon Shift
     {
+      companyId,
       patientId: patientIds[3],
       date: getDateDaysAgo(0),
       shift: "afternoon",
@@ -406,6 +416,7 @@ async function seedADLs(caregiverIds, patientIds) {
 
     // Eleanor Thompson - Patient 4 - Today Morning Shift
     {
+      companyId,
       patientId: patientIds[4],
       date: getDateDaysAgo(0),
       shift: "morning",
@@ -474,6 +485,7 @@ async function seedADLs(caregiverIds, patientIds) {
 
     // Eleanor Thompson - Today Evening Shift
     {
+      companyId,
       patientId: patientIds[4],
       date: getDateDaysAgo(0),
       shift: "evening",
@@ -517,6 +529,7 @@ async function seedADLs(caregiverIds, patientIds) {
 
     // Yesterday Records - Margaret Johnson
     {
+      companyId,
       patientId: patientIds[0],
       date: getDateDaysAgo(1),
       shift: "morning",
@@ -566,6 +579,7 @@ async function seedADLs(caregiverIds, patientIds) {
 
     // Yesterday - Robert Chen
     {
+      companyId,
       patientId: patientIds[1],
       date: getDateDaysAgo(1),
       shift: "morning",

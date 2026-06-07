@@ -1,6 +1,12 @@
 const mongoose = require("mongoose");
 
 const adlRecordSchema = new mongoose.Schema({
+    companyId: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Company',
+        required: true,
+        index: true,
+    },
     patientId: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Patient',
@@ -112,6 +118,7 @@ const adlRecordSchema = new mongoose.Schema({
 
 adlRecordSchema.index({ patientId: 1, date: -1, shift: 1 });
 adlRecordSchema.index({ recordedBy: 1, date: -1 });
+adlRecordSchema.index({ companyId: 1, date: -1 });
 
 const ADLRecordModel = mongoose.model('ADLRecord', adlRecordSchema);
 

@@ -1,6 +1,7 @@
 const { UserModel } = require('../models/userModel');
+const { CompanyModel } = require('../models/companyModel');
 const crypto = require("crypto");
-const { 
+const {
     generateJWT,
     comparePassword,
     generateRefreshToken,
@@ -10,33 +11,56 @@ const { AppError } = require('../functions/helperFunctions');
 const { sendPasswordResetEmail } = require('./emailService');
 
 
-async function registerUserService({ firstName, lastName, username, email, password}){
-    if (!firstName || !lastName || !username || !email || !password){
+async function registerUserService({ firstName, lastName, username, email, password, companyName, inviteCode }) {
+    if (!firstName || !lastName || !username || !email || !password) {
         throw new AppError("Missing required fields.", 400);
+    }
+    if (!companyName && !inviteCode) {
+        throw new AppError("Either a company name (to create a new company) or an invite code (to join an existing one) is required.", 400);
     }
 
     const existingUser = await UserModel.findOne({
-      $or: [{ email: email }, { username: username }],
+        $or: [{ email }, { username }],
     });
-
     if (existingUser) {
-      const errorMessage =
-        existingUser.email === email
-          ? "This email is already taken."
-          : "Username already taken.";
-      throw new AppError(errorMessage, 409);
+        const errorMessage = existingUser.email === email
+            ? "This email is already taken."
+            : "Username already taken.";
+        throw new AppError(errorMessage, 409);
     }
 
-    let newUser = await UserModel.create({
-      firstName,
-      lastName,
-      username,
-      email,
-      password,
-      role: 'User'
+    let company;
+    let role;
+
+    if (inviteCode) {
+        company = await CompanyModel.findOne({ inviteCode: inviteCode.trim(), isActive: true });
+        if (!company) throw new AppError("Invalid or expired invite code.", 400);
+        role = 'User';
+    } else {
+        company = await CompanyModel.create({
+            name: companyName.trim(),
+            createdBy: null, // set after user creation
+        });
+        role = 'Admin';
+    }
+
+    const newUser = await UserModel.create({
+        firstName,
+        lastName,
+        username,
+        email,
+        password,
+        role,
+        companyId: company._id,
     });
 
-    const token = generateJWT(newUser._id, newUser.username, newUser.role);
+    // If this user created the company, record them as the owner
+    if (role === 'Admin') {
+        company.createdBy = newUser._id;
+        await company.save();
+    }
+
+    const token = generateJWT(newUser._id, newUser.username, newUser.role, newUser.firstName, newUser.lastName, newUser.companyId);
     const refreshToken = generateRefreshToken(newUser._id);
 
     return { user: newUser.toSafeObject(), token, refreshToken };
@@ -67,7 +91,7 @@ async function loginUserService({email, password}){
       { $set: { lastLogin: new Date() } }
     );
 
-    const token = generateJWT(user._id, user.username, user.role);
+    const token = generateJWT(user._id, user.username, user.role, user.firstName, user.lastName, user.companyId);
     const refreshToken = generateRefreshToken(user._id);
 
     return { user: user.toSafeObject(), token, refreshToken };
@@ -156,7 +180,7 @@ async function refreshTokenService({ refreshToken }){
       throw new AppError("This account has been deactivated.", 403);
     }
 
-    const newAccessToken = generateJWT(user._id, user.username, user.role);
+    const newAccessToken = generateJWT(user._id, user.username, user.role, user.firstName, user.lastName, user.companyId);
     const newRefreshToken = generateRefreshToken(user._id);
 
     return {
@@ -171,10 +195,15 @@ async function refreshTokenService({ refreshToken }){
   }
 }
 
+async function logoutService(userId) {
+    await UserModel.findByIdAndUpdate(userId, { $set: { refreshTokenHash: null } });
+}
+
 module.exports = {
     loginUserService,
     registerUserService,
     requestPasswordResetService,
     resetPasswordService,
-    refreshTokenService
+    refreshTokenService,
+    logoutService,
 }

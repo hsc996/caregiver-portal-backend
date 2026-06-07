@@ -1,7 +1,10 @@
 const { ShiftModel } = require("../../models/shiftModel");
 const { AppError } = require("../../functions/helperFunctions.js");
 
-async function seedShifts(caregiverIds, patientIds) {
+async function seedShifts(companyId, caregiverIds, patientIds) {
+  if (!companyId) {
+    throw new AppError("No companyId provided", 400);
+  }
   if (!caregiverIds || caregiverIds.length === 0) {
     throw new AppError("No caregiver IDs provided", 400);
   }
@@ -36,6 +39,7 @@ async function seedShifts(caregiverIds, patientIds) {
 
     // Yesterday - Margaret Johnson (Patient 0)
     {
+      companyId,
       patientId: patientIds[0],
       caregiverId: caregiverIds[0],
       date: getDateDaysAgo(1),
@@ -47,6 +51,7 @@ async function seedShifts(caregiverIds, patientIds) {
       status: "completed",
     },
     {
+      companyId,
       patientId: patientIds[0],
       caregiverId: caregiverIds[1] || caregiverIds[0],
       date: getDateDaysAgo(1),
@@ -60,6 +65,7 @@ async function seedShifts(caregiverIds, patientIds) {
 
     // Yesterday - Robert Chen (Patient 1)
     {
+      companyId,
       patientId: patientIds[1],
       caregiverId: caregiverIds[0],
       date: getDateDaysAgo(1),
@@ -71,6 +77,7 @@ async function seedShifts(caregiverIds, patientIds) {
       status: "completed",
     },
     {
+      companyId,
       patientId: patientIds[1],
       caregiverId: caregiverIds[1] || caregiverIds[0],
       date: getDateDaysAgo(1),
@@ -84,6 +91,7 @@ async function seedShifts(caregiverIds, patientIds) {
 
     // Yesterday - Dorothy Williams (Patient 2)
     {
+      companyId,
       patientId: patientIds[2],
       caregiverId: caregiverIds[0],
       date: getDateDaysAgo(1),
@@ -95,6 +103,7 @@ async function seedShifts(caregiverIds, patientIds) {
       status: "completed",
     },
     {
+      companyId,
       patientId: patientIds[2],
       caregiverId: caregiverIds[1] || caregiverIds[0],
       date: getDateDaysAgo(1),
@@ -108,6 +117,7 @@ async function seedShifts(caregiverIds, patientIds) {
 
     // Yesterday - Harold Martinez (Patient 3)
     {
+      companyId,
       patientId: patientIds[3],
       caregiverId: caregiverIds[1] || caregiverIds[0],
       date: getDateDaysAgo(1),
@@ -121,6 +131,7 @@ async function seedShifts(caregiverIds, patientIds) {
 
     // Yesterday - Eleanor Thompson (Patient 4)
     {
+      companyId,
       patientId: patientIds[4],
       caregiverId: caregiverIds[0],
       date: getDateDaysAgo(1),
@@ -134,6 +145,7 @@ async function seedShifts(caregiverIds, patientIds) {
 
     // 2 Days Ago - Margaret Johnson
     {
+      companyId,
       patientId: patientIds[0],
       caregiverId: caregiverIds[1] || caregiverIds[0],
       date: getDateDaysAgo(2),
@@ -149,6 +161,7 @@ async function seedShifts(caregiverIds, patientIds) {
 
     // Today - Margaret Johnson
     {
+      companyId,
       patientId: patientIds[0],
       caregiverId: caregiverIds[0],
       date: getDateDaysAgo(0),
@@ -162,6 +175,7 @@ async function seedShifts(caregiverIds, patientIds) {
 
     // Today - Robert Chen
     {
+      companyId,
       patientId: patientIds[1],
       caregiverId: caregiverIds[0],
       date: getDateDaysAgo(0),
@@ -175,6 +189,7 @@ async function seedShifts(caregiverIds, patientIds) {
 
     // Today - Dorothy Williams
     {
+      companyId,
       patientId: patientIds[2],
       caregiverId: caregiverIds[0],
       date: getDateDaysAgo(0),
@@ -189,6 +204,7 @@ async function seedShifts(caregiverIds, patientIds) {
 
     // Today Evening - Scheduled
     {
+      companyId,
       patientId: patientIds[0],
       caregiverId: caregiverIds[1] || caregiverIds[0],
       date: getDateDaysAgo(0),
@@ -200,6 +216,7 @@ async function seedShifts(caregiverIds, patientIds) {
       status: "scheduled",
     },
     {
+      companyId,
       patientId: patientIds[1],
       caregiverId: caregiverIds[1] || caregiverIds[0],
       date: getDateDaysAgo(0),
@@ -211,6 +228,7 @@ async function seedShifts(caregiverIds, patientIds) {
       status: "scheduled",
     },
     {
+      companyId,
       patientId: patientIds[2],
       caregiverId: caregiverIds[1] || caregiverIds[0],
       date: getDateDaysAgo(0),
@@ -224,6 +242,7 @@ async function seedShifts(caregiverIds, patientIds) {
 
     // Today - Harold Martinez
     {
+      companyId,
       patientId: patientIds[3],
       caregiverId: caregiverIds[1] || caregiverIds[0],
       date: getDateDaysAgo(0),
@@ -237,6 +256,7 @@ async function seedShifts(caregiverIds, patientIds) {
 
     // Today - Eleanor Thompson
     {
+      companyId,
       patientId: patientIds[4],
       caregiverId: caregiverIds[0],
       date: getDateDaysAgo(0),
@@ -252,6 +272,7 @@ async function seedShifts(caregiverIds, patientIds) {
 
     // Tomorrow - Margaret Johnson
     {
+      companyId,
       patientId: patientIds[0],
       caregiverId: caregiverIds[0],
       date: getDateDaysAhead(1),
@@ -263,6 +284,7 @@ async function seedShifts(caregiverIds, patientIds) {
       status: "scheduled",
     },
     {
+      companyId,
       patientId: patientIds[0],
       caregiverId: caregiverIds[1] || caregiverIds[0],
       date: getDateDaysAhead(1),
@@ -276,6 +298,7 @@ async function seedShifts(caregiverIds, patientIds) {
 
     // Tomorrow - Robert Chen
     {
+      companyId,
       patientId: patientIds[1],
       caregiverId: caregiverIds[0],
       date: getDateDaysAhead(1),
@@ -287,6 +310,7 @@ async function seedShifts(caregiverIds, patientIds) {
       status: "scheduled",
     },
     {
+      companyId,
       patientId: patientIds[1],
       caregiverId: caregiverIds[1] || caregiverIds[0],
       date: getDateDaysAhead(1),
@@ -300,6 +324,7 @@ async function seedShifts(caregiverIds, patientIds) {
 
     // Tomorrow - Dorothy Williams
     {
+      companyId,
       patientId: patientIds[2],
       caregiverId: caregiverIds[0],
       date: getDateDaysAhead(1),
@@ -311,6 +336,7 @@ async function seedShifts(caregiverIds, patientIds) {
       status: "scheduled",
     },
     {
+      companyId,
       patientId: patientIds[2],
       caregiverId: caregiverIds[1] || caregiverIds[0],
       date: getDateDaysAhead(1),
@@ -324,6 +350,7 @@ async function seedShifts(caregiverIds, patientIds) {
 
     // Tomorrow - Harold Martinez
     {
+      companyId,
       patientId: patientIds[3],
       caregiverId: caregiverIds[1] || caregiverIds[0],
       date: getDateDaysAhead(1),
@@ -337,6 +364,7 @@ async function seedShifts(caregiverIds, patientIds) {
 
     // Tomorrow - Eleanor Thompson
     {
+      companyId,
       patientId: patientIds[4],
       caregiverId: caregiverIds[0],
       date: getDateDaysAhead(1),
@@ -348,6 +376,7 @@ async function seedShifts(caregiverIds, patientIds) {
       status: "scheduled",
     },
     {
+      companyId,
       patientId: patientIds[4],
       caregiverId: caregiverIds[1] || caregiverIds[0],
       date: getDateDaysAhead(1),
@@ -361,6 +390,7 @@ async function seedShifts(caregiverIds, patientIds) {
 
     // Day After Tomorrow - Selected Shifts
     {
+      companyId,
       patientId: patientIds[0],
       caregiverId: caregiverIds[0],
       date: getDateDaysAhead(2),
@@ -372,6 +402,7 @@ async function seedShifts(caregiverIds, patientIds) {
       status: "scheduled",
     },
     {
+      companyId,
       patientId: patientIds[1],
       caregiverId: caregiverIds[1] || caregiverIds[0],
       date: getDateDaysAhead(2),
@@ -383,6 +414,7 @@ async function seedShifts(caregiverIds, patientIds) {
       status: "scheduled",
     },
     {
+      companyId,
       patientId: patientIds[2],
       caregiverId: caregiverIds[0],
       date: getDateDaysAhead(2),
@@ -396,6 +428,7 @@ async function seedShifts(caregiverIds, patientIds) {
 
     // 3 Days Ahead
     {
+      companyId,
       patientId: patientIds[0],
       caregiverId: caregiverIds[1] || caregiverIds[0],
       date: getDateDaysAhead(3),
@@ -408,6 +441,7 @@ async function seedShifts(caregiverIds, patientIds) {
       notes: null,
     },
     {
+      companyId,
       patientId: patientIds[3],
       caregiverId: caregiverIds[0],
       date: getDateDaysAhead(3),
@@ -419,6 +453,7 @@ async function seedShifts(caregiverIds, patientIds) {
       status: "scheduled",
     },
     {
+      companyId,
       patientId: patientIds[4],
       caregiverId: caregiverIds[1] || caregiverIds[0],
       date: getDateDaysAhead(3),
@@ -434,6 +469,7 @@ async function seedShifts(caregiverIds, patientIds) {
 
     // 3 Days Ago - Cancelled shift
     {
+      companyId,
       patientId: patientIds[2],
       caregiverId: caregiverIds[1] || caregiverIds[0],
       date: getDateDaysAgo(3),
@@ -447,6 +483,7 @@ async function seedShifts(caregiverIds, patientIds) {
 
     // 4 Days Ago - No-show
     {
+      companyId,
       patientId: patientIds[3],
       caregiverId: caregiverIds[0],
       date: getDateDaysAgo(4),

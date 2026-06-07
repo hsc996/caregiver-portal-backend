@@ -1,6 +1,12 @@
 const mongoose = require("mongoose");
 
 const HandoverSchema = new mongoose.Schema({
+    companyId: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Company',
+        required: true,
+        index: true,
+    },
     userId: {
         type: mongoose.Schema.Types.ObjectId,
         ref: "User",
@@ -34,6 +40,7 @@ const HandoverSchema = new mongoose.Schema({
 
 HandoverSchema.index({ patientId: 1, createdAt: -1 });
 HandoverSchema.index({ userId: 1, createdAt: -1 });
+HandoverSchema.index({ companyId: 1, createdAt: -1 });
 
 const HandoverModel = mongoose.model("HandoverNotes", HandoverSchema);
 

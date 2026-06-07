@@ -1,6 +1,12 @@
 const mongoose = require("mongoose");
 
 const shiftSchema = new mongoose.Schema({
+    companyId: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Company',
+        required: true,
+        index: true,
+    },
     patientId: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Patient',
@@ -46,6 +52,8 @@ const shiftSchema = new mongoose.Schema({
 
 shiftSchema.index({ patientId: 1, date: -1 });
 shiftSchema.index({ caregiverId: 1, date: -1 });
+shiftSchema.index({ companyId: 1, date: -1 });
+shiftSchema.index({ companyId: 1, caregiverId: 1, date: -1 });
 
 const ShiftModel = mongoose.model('Shift', shiftSchema);
 

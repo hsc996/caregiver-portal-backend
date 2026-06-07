@@ -1,12 +1,13 @@
 const { MedicationModel } = require('../models/medicationModel');
 const { AppError } = require('../functions/helperFunctions');
 
-async function CreateMedicationAdministration(patientId, { medicationName, dosage, route, scheduledTime }, userId) {
+async function CreateMedicationAdministration(patientId, { medicationName, dosage, route, scheduledTime }, userId, companyId) {
     if (!medicationName || !dosage || !route || !scheduledTime) {
         throw new AppError('Missing required medication fields.', 400);
     }
 
     const record = await MedicationModel.create({
+        companyId,
         patientId,
         medicationName,
         dosage,

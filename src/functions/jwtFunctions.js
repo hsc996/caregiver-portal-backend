@@ -4,7 +4,7 @@ const bcrypt = require("bcrypt");
 let jwtSecretKey = process.env.JWT_SECRET_KEY;
 let saltRounds = 12;
 
-function generateJWT(userId, username, role, firstName, lastName){
+function generateJWT(userId, username, role, firstName, lastName, companyId){
     if (!userId || !role){
         throw new Error("User ID and role are required for JWT generation.")
     }
@@ -15,6 +15,7 @@ function generateJWT(userId, username, role, firstName, lastName){
             role: role,
             firstName: firstName ?? '',
             lastName: lastName ?? '',
+            companyId: companyId ? companyId.toString() : null,
         },
         jwtSecretKey,
         {
