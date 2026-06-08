@@ -23,7 +23,7 @@ async function CreateMedicationAdministration(patientId, { medicationName, dosag
     return record;
 }
 
-async function GetMedicationAdministrations(patientId, date) {
+async function GetMedicationAdministrations(patientId, companyId, date) {
     const start = new Date(date);
     start.setHours(0, 0, 0, 0);
     const end = new Date(date);
@@ -31,19 +31,26 @@ async function GetMedicationAdministrations(patientId, date) {
 
     return MedicationModel.find({
         patientId,
+        companyId,
         status: 'given',
         actualAdministrationTime: { $gte: start, $lte: end },
     }).populate('administeredBy', 'firstName lastName');
 }
 
-async function UnvalidateMedicationAdministration(recordId, userId, reason) {
+async function UnvalidateMedicationAdministration(recordId, userId, reason, companyId) {
     if (!reason || !reason.trim()) {
         throw new AppError('A reason is required to unvalidate a medication record.', 400);
     }
 
     const record = await MedicationModel.findById(recordId);
     if (!record) throw new AppError('Medication administration record not found.', 404);
+    if (record.companyId.toString() !== companyId.toString()) {
+        throw new AppError('Medication administration record not found.', 404);
+    }
     if (record.status !== 'given') throw new AppError('Only administered medications can be unvalidated.', 400);
+    if (record.administeredBy.toString() !== userId.toString()) {
+        throw new AppError('Unauthorized. This medication was validated by another user.', 403);
+    }
 
     record.status = 'unvalidated';
     record.unvalidatedAt = new Date();

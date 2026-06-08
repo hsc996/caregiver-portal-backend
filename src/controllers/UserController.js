@@ -2,7 +2,8 @@ const {
     FindUserByQuery,
     FindAllUsers,
     UpdateUserByQuery,
-    DeleteUserByQuery
+    DeleteUserByQuery,
+    createUserService,
 } = require('../services/userService');
 const { AppError } = require('../functions/helperFunctions');
 
@@ -57,7 +58,7 @@ async function updateUserDataController(req, res, next){
         });
 
         const updatedUser = await UpdateUserByQuery(
-            {_id: id},
+            { _id: id, companyId: req.user.companyId },
             updatedData
         );
 
@@ -77,7 +78,7 @@ async function softDeleteUser(req, res, next){
     try {
         const { id } = req.params;
 
-        const deleteUser = await DeleteUserByQuery({ _id: id });
+        const deleteUser = await DeleteUserByQuery({ _id: id, companyId: req.user.companyId });
 
         res.status(200).json({
             success: true,
@@ -113,9 +114,29 @@ async function uploadProfileImageController(req, res, next) {
 }
 
 
+async function createUserController(req, res, next) {
+    try {
+        const { firstName, lastName, username, email, role } = req.body;
+        const user = await createUserService({
+            firstName, lastName, username, email, role,
+            companyId: req.user.companyId,
+        });
+
+        res.status(201).json({
+            success: true,
+            data: user,
+            message: "User created. A welcome email with a password setup link has been sent."
+        });
+    } catch (error) {
+        next(error);
+    }
+}
+
+
 module.exports = {
     getAllUsersController,
     updateUserDataController,
     softDeleteUser,
-    uploadProfileImageController
+    uploadProfileImageController,
+    createUserController,
 }

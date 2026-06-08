@@ -23,11 +23,6 @@ const EmergencyContactSchema = new mongoose.Schema({
         trim: true,
         match: [/^[^\s@]+@[^\s@]+\.[^\s@]+$/, 'Please enter a valid email address.']
     },
-    userId: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'User',
-        default: null
-    },
     isPrimary: {
         type: Boolean,
         default: false

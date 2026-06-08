@@ -21,7 +21,7 @@ async function getPatientShiftsController(req, res, next) {
             mon  = now.getMonth() + 1;
         }
 
-        const data = await GetShiftsByPatient(id, year, mon);
+        const data = await GetShiftsByPatient(id, req.user.companyId, year, mon);
         res.status(200).json({ success: true, data });
     } catch (error) {
         next(error);

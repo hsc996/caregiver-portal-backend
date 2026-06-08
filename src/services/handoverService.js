@@ -1,13 +1,13 @@
 const { HandoverModel } = require('../models/handoverNotesModel');
 
-async function GetHandoverNotesByDate(patientId, date) {
+async function GetHandoverNotesByDate(patientId, companyId, date) {
     const start = new Date(date);
     start.setHours(0, 0, 0, 0);
     const end = new Date(date);
     end.setHours(23, 59, 59, 999);
 
     const notes = await HandoverModel
-        .find({ patientId, createdAt: { $gte: start, $lte: end } })
+        .find({ patientId, companyId, createdAt: { $gte: start, $lte: end } })
         .populate('userId', 'firstName lastName')
         .sort({ createdAt: 1 });
 

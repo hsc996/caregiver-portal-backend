@@ -4,11 +4,13 @@ const {
     getAllUsersController,
     updateUserDataController,
     softDeleteUser,
-    uploadProfileImageController
+    uploadProfileImageController,
+    createUserController,
 } = require('../controllers/UserController');
 const { uploadProfileImage } = require('../utils/upload');
 const { paginationMiddleware,
         authenticateUser,
+        authorizeRoles,
         authorizeOwnerorAdmin
 } = require('../utils/middleware');
 
@@ -123,7 +125,9 @@ const { paginationMiddleware,
  *       500:
  *         description: Server error
  */
-router.get('/fetchallusers', paginationMiddleware, getAllUsersController);
+router.post('/', authenticateUser, authorizeRoles('Admin'), createUserController);
+
+router.get('/fetchallusers', authenticateUser, paginationMiddleware, getAllUsersController);
 
 /**
  * @swagger

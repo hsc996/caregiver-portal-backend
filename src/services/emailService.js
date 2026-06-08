@@ -44,6 +44,32 @@ async function sendPasswordResetEmail(toEmail, resetUrl){
     await transporter.sendMail(mailOptions);
 }
 
+async function sendWelcomeEmail(toEmail, firstName, resetUrl) {
+    if (process.env.NODE_ENV === 'development' || !process.env.EMAIL_USER) {
+        console.log('='.repeat(60));
+        console.log('📧 WELCOME EMAIL (NOT SENT - DEV MODE)');
+        console.log('To:', toEmail);
+        console.log('Set password URL:', resetUrl);
+        console.log('='.repeat(60));
+        return;
+    }
+
+    const mailOptions = {
+        from: process.env.EMAIL_USER,
+        to: toEmail,
+        subject: 'Welcome — set your password',
+        html: `
+        <h2>Welcome, ${escapeHtml(firstName)}!</h2>
+        <p>An account has been created for you. Click the link below to set your password and get started:</p>
+        <a href="${escapeHtml(resetUrl)}">Set Password</a>
+        <p>This link will expire in 1 hour.</p>
+        `
+    };
+
+    await transporter.sendMail(mailOptions);
+}
+
 module.exports = {
-    sendPasswordResetEmail
+    sendPasswordResetEmail,
+    sendWelcomeEmail,
 }

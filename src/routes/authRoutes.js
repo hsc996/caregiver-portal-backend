@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const { signup,
+    join,
     signin,
     requestPasswordReset,
     resetPassword,
@@ -69,7 +70,8 @@ const authLimiter = rateLimit({
  *       500:
  *         description: Unable to register new user
  */
-router.post('/signup', authLimiter, authenticateUser, authorizeRoles('Admin'), signup);
+router.post('/signup', authLimiter, signup);
+router.post('/join', authLimiter, join);
 
 /**
  * @swagger

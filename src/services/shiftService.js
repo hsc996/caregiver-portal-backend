@@ -19,12 +19,12 @@ function toDateKey(date) {
     return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
 }
 
-async function GetShiftsByPatient(patientId, year, month) {
+async function GetShiftsByPatient(patientId, companyId, year, month) {
     const start = new Date(year, month - 1, 1);
     const end   = new Date(year, month, 1);
 
     const shifts = await ShiftModel
-        .find({ patientId, date: { $gte: start, $lt: end } })
+        .find({ patientId, companyId, date: { $gte: start, $lt: end } })
         .populate('caregiverId', 'firstName lastName')
         .sort({ date: 1, scheduledStart: 1 });
 

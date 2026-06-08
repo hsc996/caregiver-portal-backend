@@ -1,5 +1,6 @@
 const {
-  registerUserService,
+  signupService,
+  joinService,
   loginUserService,
   requestPasswordResetService,
   resetPasswordService,
@@ -8,20 +9,14 @@ const {
  } = require('../services/authService');
 
 
-/** 
- * Controller to handle user account registration
- * @param {Request} req
- * @param {Response} res 
- * @param {Function} next
-*/
 async function signup(req, res, next){
   try {
-    const { firstName, lastName, username, email, password, companyName, inviteCode } = req.body;
-    const { user, token, refreshToken } = await registerUserService({ firstName, lastName, username, email, password, companyName, inviteCode });
+    const { firstName, lastName, username, email, password, companyName } = req.body;
+    const { user, token, refreshToken } = await signupService({ firstName, lastName, username, email, password, companyName });
 
     res.status(201).json({
       success: true,
-      message: "User created successfully.",
+      message: "Company and admin account created successfully.",
       user,
       token,
       refreshToken
@@ -32,12 +27,24 @@ async function signup(req, res, next){
 }
 
 
-/** 
- * Controller to handle user sign in
- * @param {Request} req
- * @param {Response} res
- * @param {Function} next 
-*/
+async function join(req, res, next){
+  try {
+    const { firstName, lastName, username, email, password, inviteCode } = req.body;
+    const { user, token, refreshToken } = await joinService({ firstName, lastName, username, email, password, inviteCode });
+
+    res.status(201).json({
+      success: true,
+      message: "Account created successfully.",
+      user,
+      token,
+      refreshToken
+    });
+  } catch (error) {
+    next(error);
+  }
+}
+
+
 async function signin(req, res, next) {
   try {
     const { email, password } = req.body;
@@ -56,16 +63,10 @@ async function signin(req, res, next) {
 }
 
 
-/** 
- * Controller to request password reset email
- * @param {Request} req
- * @param {Response} res
- * @param {Function} next 
-*/
 async function requestPasswordReset(req, res, next) {
   try {
     const { email } = req.body;
-    const result = await requestPasswordResetService({email});
+    const result = await requestPasswordResetService({ email });
 
     res.status(200).json({
       success: true,
@@ -77,12 +78,6 @@ async function requestPasswordReset(req, res, next) {
 }
 
 
-/** 
- * Controller to reset password with token
- * @param {Request} req
- * @param {Response} res
- * @param {Function} next 
-*/
 async function resetPassword(req, res, next) {
   try {
     const { token, newPassword } = req.body;
@@ -97,16 +92,11 @@ async function resetPassword(req, res, next) {
   }
 }
 
-/** 
- * Controller to refresh access token
- * @param {Request} req
- * @param {Response} res
- * @param {Function} next 
-*/
+
 async function refreshToken(req, res, next){
   try {
     const { refreshToken } = req.body;
-    const result = await refreshTokenService({refreshToken});
+    const result = await refreshTokenService({ refreshToken });
 
     res.status(200).json({
       success: true,
@@ -132,6 +122,7 @@ async function logout(req, res, next) {
 module.exports = {
     signin,
     signup,
+    join,
     resetPassword,
     requestPasswordReset,
     refreshToken,

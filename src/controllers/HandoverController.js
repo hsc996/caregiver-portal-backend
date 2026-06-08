@@ -19,7 +19,7 @@ async function getHandoverNotesController(req, res, next) {
 
         await requireCompanyPatient(id, req.user.companyId);
 
-        const notes = await GetHandoverNotesByDate(id, date);
+        const notes = await GetHandoverNotesByDate(id, req.user.companyId, date);
         res.status(200).json({ success: true, data: notes });
     } catch (error) {
         next(error);

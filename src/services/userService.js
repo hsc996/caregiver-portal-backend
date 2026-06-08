@@ -1,6 +1,8 @@
 const { UserModel } = require('../models/userModel');
 const { AppError } = require('../functions/helperFunctions');
-const { mongoose } = require('mongoose');
+const { sendWelcomeEmail } = require('./emailService');
+const crypto = require('crypto');
+const mongoose = require('mongoose');
 
 // Find user by query
 
@@ -88,9 +90,43 @@ async function DeleteUserByQuery(query){
 
 
 
+async function createUserService({ firstName, lastName, username, email, role = 'User', companyId }) {
+    if (!firstName || !lastName || !username || !email || !companyId) {
+        throw new AppError("Missing required fields.", 400);
+    }
+
+    const existingUser = await UserModel.findOne({ $or: [{ email }, { username }] });
+    if (existingUser) {
+        const errorMessage = existingUser.email === email
+            ? "This email is already taken."
+            : "Username already taken.";
+        throw new AppError(errorMessage, 409);
+    }
+
+    const tempPassword = crypto.randomBytes(16).toString('hex');
+    const resetToken = crypto.randomBytes(32).toString('hex');
+    const hashedToken = crypto.createHash('sha256').update(resetToken).digest('hex');
+
+    const newUser = await UserModel.create({
+        firstName, lastName, username, email,
+        password: tempPassword,
+        role,
+        companyId,
+        passwordResetToken: hashedToken,
+        passwordResetExpires: Date.now() + 3600000,
+    });
+
+    const resetUrl = `${process.env.FRONTEND_URL}/reset-password?token=${resetToken}`;
+    await sendWelcomeEmail(newUser.email, newUser.firstName, resetUrl);
+
+    return newUser.toSafeObject();
+}
+
+
 module.exports = {
     FindUserByQuery,
     FindAllUsers,
     UpdateUserByQuery,
-    DeleteUserByQuery
+    DeleteUserByQuery,
+    createUserService,
 }

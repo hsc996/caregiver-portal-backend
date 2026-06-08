@@ -19,7 +19,7 @@ async function getMedicationAdministrationsController(req, res, next) {
         const { date } = req.query;
         if (!date) throw new AppError('date query param is required.', 400);
         await requireCompanyPatient(patientId, req.user.companyId);
-        const records = await GetMedicationAdministrations(patientId, date);
+        const records = await GetMedicationAdministrations(patientId, req.user.companyId, date);
         res.status(200).json({ success: true, data: records });
     } catch (error) {
         next(error);
@@ -31,7 +31,7 @@ async function unvalidateMedicationAdministrationController(req, res, next) {
         const { recordId } = req.params;
         const { reason } = req.body;
         if (!reason) throw new AppError('reason is required.', 400);
-        const record = await UnvalidateMedicationAdministration(recordId, req.user.id, reason);
+        const record = await UnvalidateMedicationAdministration(recordId, req.user.id, reason, req.user.companyId);
         res.status(200).json({ success: true, data: record });
     } catch (error) {
         next(error);
