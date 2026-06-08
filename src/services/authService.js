@@ -11,23 +11,20 @@ const { AppError } = require('../functions/helperFunctions');
 const { sendPasswordResetEmail } = require('./emailService');
 
 
-async function signupService({ firstName, lastName, username, email, password, companyName }) {
-    if (!firstName || !lastName || !username || !email || !password || !companyName) {
+async function signupService({ firstName, lastName, email, password, companyName }) {
+    if (!firstName || !lastName || !email || !password || !companyName) {
         throw new AppError("Missing required fields.", 400);
     }
 
-    const existingUser = await UserModel.findOne({ $or: [{ email }, { username }] });
+    const existingUser = await UserModel.findOne({ email });
     if (existingUser) {
-        const errorMessage = existingUser.email === email
-            ? "This email is already taken."
-            : "Username already taken.";
-        throw new AppError(errorMessage, 409);
+        throw new AppError("This email is already taken.", 409);
     }
 
     const company = await CompanyModel.create({ name: companyName.trim(), createdBy: null });
 
     const newUser = await UserModel.create({
-        firstName, lastName, username, email, password,
+        firstName, lastName, email, password,
         role: 'Admin',
         companyId: company._id,
     });
@@ -35,7 +32,7 @@ async function signupService({ firstName, lastName, username, email, password, c
     company.createdBy = newUser._id;
     await company.save();
 
-    const token = generateJWT(newUser._id, newUser.username, newUser.role, newUser.firstName, newUser.lastName, newUser.companyId);
+    const token = generateJWT(newUser._id, newUser.role, newUser.firstName, newUser.lastName, newUser.companyId);
     const refreshToken = generateRefreshToken(newUser._id);
     const tokenHash = crypto.createHash('sha256').update(refreshToken).digest('hex');
     await UserModel.findByIdAndUpdate(newUser._id, { refreshTokenHash: tokenHash });
@@ -44,29 +41,26 @@ async function signupService({ firstName, lastName, username, email, password, c
 }
 
 
-async function joinService({ firstName, lastName, username, email, password, inviteCode }) {
-    if (!firstName || !lastName || !username || !email || !password || !inviteCode) {
+async function joinService({ firstName, lastName, email, password, inviteCode }) {
+    if (!firstName || !lastName || !email || !password || !inviteCode) {
         throw new AppError("Missing required fields.", 400);
     }
 
     const company = await CompanyModel.findOne({ inviteCode: inviteCode.trim(), isActive: true });
     if (!company) throw new AppError("Invalid or expired invite code.", 400);
 
-    const existingUser = await UserModel.findOne({ $or: [{ email }, { username }] });
+    const existingUser = await UserModel.findOne({ email });
     if (existingUser) {
-        const errorMessage = existingUser.email === email
-            ? "This email is already taken."
-            : "Username already taken.";
-        throw new AppError(errorMessage, 409);
+        throw new AppError("This email is already taken.", 409);
     }
 
     const newUser = await UserModel.create({
-        firstName, lastName, username, email, password,
+        firstName, lastName, email, password,
         role: 'User',
         companyId: company._id,
     });
 
-    const token = generateJWT(newUser._id, newUser.username, newUser.role, newUser.firstName, newUser.lastName, newUser.companyId);
+    const token = generateJWT(newUser._id, newUser.role, newUser.firstName, newUser.lastName, newUser.companyId);
     const refreshToken = generateRefreshToken(newUser._id);
     const tokenHash = crypto.createHash('sha256').update(refreshToken).digest('hex');
     await UserModel.findByIdAndUpdate(newUser._id, { refreshTokenHash: tokenHash });
@@ -99,7 +93,7 @@ async function loginUserService({email, password}){
       { $set: { lastLogin: new Date() } }
     );
 
-    const token = generateJWT(user._id, user.username, user.role, user.firstName, user.lastName, user.companyId);
+    const token = generateJWT(user._id, user.role, user.firstName, user.lastName, user.companyId);
     const refreshToken = generateRefreshToken(user._id);
     const tokenHash = crypto.createHash('sha256').update(refreshToken).digest('hex');
     await UserModel.findByIdAndUpdate(user._id, { refreshTokenHash: tokenHash });
@@ -195,7 +189,7 @@ async function refreshTokenService({ refreshToken }){
       throw new AppError("Invalid or revoked refresh token.", 401);
     }
 
-    const newAccessToken = generateJWT(user._id, user.username, user.role, user.firstName, user.lastName, user.companyId);
+    const newAccessToken = generateJWT(user._id, user.role, user.firstName, user.lastName, user.companyId);
     const newRefreshToken = generateRefreshToken(user._id);
     const newHash = crypto.createHash('sha256').update(newRefreshToken).digest('hex');
     await UserModel.findByIdAndUpdate(user._id, { refreshTokenHash: newHash });

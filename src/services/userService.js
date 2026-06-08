@@ -90,17 +90,14 @@ async function DeleteUserByQuery(query){
 
 
 
-async function createUserService({ firstName, lastName, username, email, role = 'User', companyId }) {
-    if (!firstName || !lastName || !username || !email || !companyId) {
+async function createUserService({ firstName, lastName, email, role = 'User', companyId }) {
+    if (!firstName || !lastName || !email || !companyId) {
         throw new AppError("Missing required fields.", 400);
     }
 
-    const existingUser = await UserModel.findOne({ $or: [{ email }, { username }] });
+    const existingUser = await UserModel.findOne({ email });
     if (existingUser) {
-        const errorMessage = existingUser.email === email
-            ? "This email is already taken."
-            : "Username already taken.";
-        throw new AppError(errorMessage, 409);
+        throw new AppError("This email is already taken.", 409);
     }
 
     const tempPassword = crypto.randomBytes(16).toString('hex');
@@ -108,7 +105,7 @@ async function createUserService({ firstName, lastName, username, email, role = 
     const hashedToken = crypto.createHash('sha256').update(resetToken).digest('hex');
 
     const newUser = await UserModel.create({
-        firstName, lastName, username, email,
+        firstName, lastName, email,
         password: tempPassword,
         role,
         companyId,

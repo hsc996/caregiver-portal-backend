@@ -25,10 +25,6 @@ const { paginationMiddleware,
  *           type: string
  *           description: Unique identifier of the user
  *           example: 64c2f3ae2c9e4a5a3b1d7e88
- *         username:
- *           type: string
- *           description: Username of the user
- *           example: johndoe
  *         email:
  *           type: string
  *           format: email
@@ -67,7 +63,6 @@ const { paginationMiddleware,
  *           example: 2024-06-01T15:30:00Z
  *       required:
  *         - _id
- *         - username
  *         - email
  *         - role
  *         - isActive
@@ -151,9 +146,6 @@ router.get('/fetchallusers', authenticateUser, paginationMiddleware, getAllUsers
  *           schema:
  *             type: object
  *             properties:
- *               username:
- *                 type: string
- *                 example: newusername
  *               email:
  *                 type: string
  *                 format: email

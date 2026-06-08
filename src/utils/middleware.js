@@ -84,7 +84,6 @@ function authenticateUser(req, res, next) {
 
     req.user = {
       id: payload.id,
-      username: payload.username,
       role: payload.role,
       firstName: payload.firstName ?? '',
       lastName: payload.lastName ?? '',

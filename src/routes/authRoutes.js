@@ -34,12 +34,9 @@ const authLimiter = rateLimit({
  *           schema:
  *             type: object
  *             required:
- *               - username
  *               - email
  *               - password
  *             properties:
- *               username:
- *                 type: string
  *               email:
  *                 type: string
  *               password:
@@ -57,8 +54,6 @@ const authLimiter = rateLimit({
  *                 user:
  *                   type: object
  *                   properties:
- *                     username:
- *                       type: string
  *                     email:
  *                       type: string
  *                 token:
@@ -66,7 +61,7 @@ const authLimiter = rateLimit({
  *       400:
  *         description: Missing required fields
  *       409:
- *         description: Email or username already taken
+ *         description: Email already taken
  *       500:
  *         description: Unable to register new user
  */
@@ -109,8 +104,6 @@ router.post('/join', authLimiter, join);
  *                   type: object
  *                   properties:
  *                     _id:
- *                       type: string
- *                     username:
  *                       type: string
  *                     email:
  *                       type: string

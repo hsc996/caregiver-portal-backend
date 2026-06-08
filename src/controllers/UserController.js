@@ -51,7 +51,7 @@ async function getAllUsersController(req, res, next){
 async function updateUserDataController(req, res, next){
     try {
         const { id } = req.params;
-        const allowed = ['firstName', 'lastName', 'username', 'email'];
+        const allowed = ['firstName', 'lastName', 'email'];
         const updatedData = {};
         allowed.forEach(field => {
             if (req.body[field] !== undefined) updatedData[field] = req.body[field];
@@ -116,9 +116,9 @@ async function uploadProfileImageController(req, res, next) {
 
 async function createUserController(req, res, next) {
     try {
-        const { firstName, lastName, username, email, role } = req.body;
+        const { firstName, lastName, email, role } = req.body;
         const user = await createUserService({
-            firstName, lastName, username, email, role,
+            firstName, lastName, email, role,
             companyId: req.user.companyId,
         });
 

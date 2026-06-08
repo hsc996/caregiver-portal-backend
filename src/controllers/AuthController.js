@@ -11,8 +11,8 @@ const {
 
 async function signup(req, res, next){
   try {
-    const { firstName, lastName, username, email, password, companyName } = req.body;
-    const { user, token, refreshToken } = await signupService({ firstName, lastName, username, email, password, companyName });
+    const { firstName, lastName, email, password, companyName } = req.body;
+    const { user, token, refreshToken } = await signupService({ firstName, lastName, email, password, companyName });
 
     res.status(201).json({
       success: true,
@@ -29,8 +29,8 @@ async function signup(req, res, next){
 
 async function join(req, res, next){
   try {
-    const { firstName, lastName, username, email, password, inviteCode } = req.body;
-    const { user, token, refreshToken } = await joinService({ firstName, lastName, username, email, password, inviteCode });
+    const { firstName, lastName, email, password, inviteCode } = req.body;
+    const { user, token, refreshToken } = await joinService({ firstName, lastName, email, password, inviteCode });
 
     res.status(201).json({
       success: true,

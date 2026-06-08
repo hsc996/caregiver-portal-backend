@@ -12,7 +12,7 @@ async function seedUsers(companyId) {
             companyId,
             firstName: "Hannah",
             lastName: "Scaife",
-            username: "first_user",
+
             email: "han.scaife@gmail.com",
             password: SEED_ADMIN_PASSWORD,
             role: "Admin",
@@ -21,7 +21,7 @@ async function seedUsers(companyId) {
             companyId,
             firstName: "Sarah",
             lastName: "Jones",
-            username: "second_user",
+
             email: "user2@gmail.com",
             password: SEED_USER2_PASSWORD,
             role: "User",
@@ -30,7 +30,7 @@ async function seedUsers(companyId) {
             companyId,
             firstName: "James",
             lastName: "Carter",
-            username: "third_user",
+
             email: "user3@gmail.com",
             password: SEED_USER3_PASSWORD,
             role: "User",

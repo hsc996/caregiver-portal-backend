@@ -18,7 +18,7 @@ async function CreateMedicationAdministration(patientId, { medicationName, dosag
         actualAdministrationTime: new Date(),
     });
 
-    await record.populate('administeredBy', 'firstName lastName username');
+    await record.populate('administeredBy', 'firstName lastName');
 
     return record;
 }
@@ -58,7 +58,7 @@ async function UnvalidateMedicationAdministration(recordId, userId, reason, comp
     record.unvalidationReason = reason.trim();
     await record.save();
 
-    await record.populate('unvalidatedBy', 'firstName lastName username');
+    await record.populate('unvalidatedBy', 'firstName lastName');
     return record;
 }
 
