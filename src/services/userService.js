@@ -1,6 +1,7 @@
 const { UserModel } = require('../models/userModel');
 const { AppError } = require('../functions/helperFunctions');
-const { sendWelcomeEmail } = require('./emailService');
+const { sendWelcomeEmail, sendInviteEmail } = require('./emailService');
+const { CompanyModel } = require('../models/companyModel');
 const crypto = require('crypto');
 const mongoose = require('mongoose');
 
@@ -120,10 +121,25 @@ async function createUserService({ firstName, lastName, email, role = 'User', co
 }
 
 
+async function sendInviteService({ email, role = 'User', companyId }) {
+    if (!email || !companyId) {
+        throw new AppError("Missing required fields.", 400);
+    }
+
+    const company = await CompanyModel.findById(companyId);
+    if (!company || !company.isActive) {
+        throw new AppError("Company not found.", 404);
+    }
+
+    const registerUrl = `${process.env.FRONTEND_URL}/signup?invite=${company.inviteCode}&email=${encodeURIComponent(email)}`;
+    await sendInviteEmail(email, role, company.inviteCode, registerUrl);
+}
+
 module.exports = {
     FindUserByQuery,
     FindAllUsers,
     UpdateUserByQuery,
     DeleteUserByQuery,
     createUserService,
+    sendInviteService,
 }

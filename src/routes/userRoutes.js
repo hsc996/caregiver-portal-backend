@@ -6,6 +6,7 @@ const {
     softDeleteUser,
     uploadProfileImageController,
     createUserController,
+    sendInviteController,
 } = require('../controllers/UserController');
 const { uploadProfileImage } = require('../utils/upload');
 const { paginationMiddleware,
@@ -121,6 +122,7 @@ const { paginationMiddleware,
  *         description: Server error
  */
 router.post('/', authenticateUser, authorizeRoles('Admin'), createUserController);
+router.post('/invite', authenticateUser, authorizeRoles('Admin'), sendInviteController);
 
 router.get('/fetchallusers', authenticateUser, paginationMiddleware, getAllUsersController);
 

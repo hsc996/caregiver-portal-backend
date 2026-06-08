@@ -4,6 +4,7 @@ const {
     UpdateUserByQuery,
     DeleteUserByQuery,
     createUserService,
+    sendInviteService,
 } = require('../services/userService');
 const { AppError } = require('../functions/helperFunctions');
 
@@ -133,10 +134,24 @@ async function createUserController(req, res, next) {
 }
 
 
+async function sendInviteController(req, res, next) {
+    try {
+        const { email, role } = req.body;
+        await sendInviteService({ email, role, companyId: req.user.companyId });
+        res.status(200).json({
+            success: true,
+            message: "Invite sent successfully.",
+        });
+    } catch (error) {
+        next(error);
+    }
+}
+
 module.exports = {
     getAllUsersController,
     updateUserDataController,
     softDeleteUser,
     uploadProfileImageController,
     createUserController,
+    sendInviteController,
 }
